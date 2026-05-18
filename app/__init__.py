@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
+import os
 
 db = SQLAlchemy()
 
@@ -21,6 +22,7 @@ def _ensure_runtime_schema():
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """,
     ]
+
     for stmt in stmts:
         try:
             db.session.execute(text(stmt))
@@ -33,7 +35,13 @@ def create_app():
     app = Flask(__name__)
 
     app.config["SECRET_KEY"] = "change-me"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:Fleet%40123@localhost/fleet_sinar_group"
+
+    db_url = os.getenv("MYSQL_URL")
+
+    if db_url and db_url.startswith("mysql://"):
+        db_url = db_url.replace("mysql://", "mysql+pymysql://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
