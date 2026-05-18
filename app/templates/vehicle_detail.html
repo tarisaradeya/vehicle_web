@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-3">
+  <div>
+    <h1 class="h4 mb-1">Profil Kendaraan: {{ v.current_plate() or "-" }}</h1>
+    <div class="text-muted small">{{ v.merk or "" }} {{ v.type or "" }} · {{ v.jenis or "" }}</div>
+  </div>
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.home') }}">← Kembali</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-lg-5">
+    <div class="card glass shadow-lg border-0">
+      <div class="card-body">
+        <div class="fw-semibold mb-2">Data Utama</div>
+        <div class="small">
+          <div><span class="text-muted">Nama Aset:</span> {{ v.new_asset_name or v.active_name or "-" }}</div>
+          <div><span class="text-muted">Nama sesuai asset PT:</span> {{ v.name_as_asset_pt or "-" }}</div>
+          <div><span class="text-muted">PT Pemilik Aset:</span>
+            {% if v.asset_owner_company %}
+              <a href="{{ url_for('main.company_profile', company_id=v.asset_owner_company.id) }}">{{ v.asset_owner_company.name }}</a>
+            {% else %}-{% endif %}
+          </div>
+          <div><span class="text-muted">PT Pemakai (current):</span>
+            {% if v.user_company %}
+              <a href="{{ url_for('main.company_profile', company_id=v.user_company.id) }}">{{ v.user_company.name }}</a>
+            {% else %}-{% endif %}
+          </div>
+          <div><span class="text-muted">User (current):</span> {{ v.user_new or v.user_old or "-" }}</div>
+          <div><span class="text-muted">Tahun Pemakaian:</span> {{ v.year_of_use or "-" }}</div>
+          <div><span class="text-muted">Status:</span> {{ v.status or "-" }}</div>
+          <div><span class="text-muted">Kondisi:</span> {{ v.kondisi or "-" }}</div>
+          <div><span class="text-muted">Lokasi:</span> {{ v.lokasi or "-" }}</div>
+          <div class="mt-2"><span class="text-muted">Keterangan:</span><br>{{ (v.keterangan or "-")|replace('\n','<br>')|safe }}</div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="fw-semibold mb-2">Edit cepat</div>
+        <form method="post" action="{{ url_for('main.vehicle_edit', vehicle_id=v.id) }}" class="row g-2">
+          <div class="col-6">
+            <label class="form-label small">Status</label>
+            <input class="form-control form-control-sm" name="status" value="{{ v.status or '' }}">
+          </div>
+          <div class="col-6">
+            <label class="form-label small">PT Pemakai (current)</label>
+            <input class="form-control form-control-sm" name="user_company" value="{{ v.user_company.name if v.user_company else '' }}" list="ptList">
+            <datalist id="ptList">
+              {% for c in companies %}
+                <option value="{{ c.name }}">
+              {% endfor %}
+            </datalist>
+          </div>
+          <div class="col-6">
+            <label class="form-label small">User (current)</label>
+            <input class="form-control form-control-sm" name="user_new" value="{{ v.user_new or '' }}">
+          </div>
+          <div class="col-6">
+            <label class="form-label small">Lokasi</label>
+            <input class="form-control form-control-sm" name="lokasi" value="{{ v.lokasi or '' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label small">Kondisi</label>
+            <input class="form-control form-control-sm" name="kondisi" value="{{ v.kondisi or '' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label small">Keterangan</label>
+            <textarea class="form-control form-control-sm" rows="3" name="keterangan">{{ v.keterangan or '' }}</textarea>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-sm btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-7">
+    <div class="card glass shadow-lg border-0">
+      <div class="card-body">
+        <ul class="nav nav-tabs" id="tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pajak1" type="button" role="tab">Pajak Tahunan</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pajak5" type="button" role="tab">Pajak 5 Tahunan</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#kir" type="button" role="tab">KIR</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#servis" type="button" role="tab">Servis</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab">User</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#plat" type="button" role="tab">Plat</button>
+          </li>
+        </ul>
+
+        <div class="tab-content pt-3">
+          <!-- Pajak Tahunan -->
+          <div class="tab-pane fade show active" id="pajak1" role="tabpanel">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="fw-semibold">History Pajak Tahunan</div>
+            </div>
+            <form class="row g-2 mt-2" method="post" action="{{ url_for('main.annual_add', vehicle_id=v.id) }}">
+              <div class="col-4">
+                <label class="form-label small">Due date (jatuh tempo)</label>
+                <input class="form-control form-control-sm" name="due_date" placeholder="YYYY-MM-DD" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Paid date</label>
+                <input class="form-control form-control-sm" name="paid_date" placeholder="YYYY-MM-DD">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Amount</label>
+                <input class="form-control form-control-sm" name="amount" placeholder="contoh: 1500000">
+              </div>
+              <div class="col-12">
+                <label class="form-label small">Note</label>
+                <input class="form-control form-control-sm" name="note" placeholder="keterangan pembayaran">
+              </div>
+              <div class="col-12">
+                <button class="btn btn-sm btn-outline-primary">Tambah</button>
+              </div>
+            </form>
+            <hr>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead><tr class="text-muted small"><th>Due</th><th>Paid</th><th>Amount</th><th>Note</th></tr></thead>
+                <tbody>
+                  {% for r in annual %}
+                    <tr>
+                      <td>{{ r.due_date }}</td>
+                      <td>{{ r.paid_date or "-" }}</td>
+                      <td>{{ r.amount or "-" }}</td>
+                      <td>{{ r.note or "-" }}</td>
+                    </tr>
+                  {% endfor %}
+                  {% if annual|length == 0 %}
+                    <tr><td colspan="4" class="text-muted small">Belum ada data.</td></tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pajak 5 Tahunan -->
+          <div class="tab-pane fade" id="pajak5" role="tabpanel">
+            <div class="fw-semibold">History Pajak 5 Tahunan (Ganti Plat)</div>
+            <form class="row g-2 mt-2" method="post" action="{{ url_for('main.five_add', vehicle_id=v.id) }}">
+              <div class="col-4">
+                <label class="form-label small">Due date</label>
+                <input class="form-control form-control-sm" name="due_date" placeholder="YYYY-MM-DD" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Paid date</label>
+                <input class="form-control form-control-sm" name="paid_date" placeholder="YYYY-MM-DD">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Amount</label>
+                <input class="form-control form-control-sm" name="amount">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">Plat sebelum</label>
+                <input class="form-control form-control-sm" name="plate_before" value="{{ v.plate_old or '' }}">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">Plat sesudah</label>
+                <input class="form-control form-control-sm" name="plate_after" value="{{ v.plate_new or '' }}">
+              </div>
+              <div class="col-12">
+                <label class="form-label small">Note</label>
+                <input class="form-control form-control-sm" name="note" placeholder="keterangan ganti plat / pajak 5 tahun">
+              </div>
+              <div class="col-12">
+                <button class="btn btn-sm btn-outline-primary">Tambah</button>
+              </div>
+            </form>
+            <hr>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead><tr class="text-muted small"><th>Due</th><th>Paid</th><th>Plat Before</th><th>Plat After</th><th>Amount</th><th>Note</th></tr></thead>
+                <tbody>
+                  {% for r in five %}
+                    <tr>
+                      <td>{{ r.due_date }}</td>
+                      <td>{{ r.paid_date or "-" }}</td>
+                      <td>{{ r.plate_before or "-" }}</td>
+                      <td>{{ r.plate_after or "-" }}</td>
+                      <td>{{ r.amount or "-" }}</td>
+                      <td>{{ r.note or "-" }}</td>
+                    </tr>
+                  {% endfor %}
+                  {% if five|length == 0 %}
+                    <tr><td colspan="6" class="text-muted small">Belum ada data.</td></tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- KIR -->
+          <div class="tab-pane fade" id="kir" role="tabpanel">
+            <div class="fw-semibold">History KIR</div>
+            <form class="row g-2 mt-2" method="post" action="{{ url_for('main.kir_add', vehicle_id=v.id) }}">
+              <div class="col-4">
+                <label class="form-label small">Due date</label>
+                <input class="form-control form-control-sm" name="due_date" placeholder="YYYY-MM-DD" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Done date</label>
+                <input class="form-control form-control-sm" name="done_date" placeholder="YYYY-MM-DD">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Result</label>
+                <select class="form-select form-select-sm" name="result">
+                  <option value="">-</option>
+                  <option value="LULUS">LULUS</option>
+                  <option value="TIDAK LULUS">TIDAK LULUS</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label small">Note</label>
+                <input class="form-control form-control-sm" name="note" placeholder="keterangan KIR">
+              </div>
+              <div class="col-12">
+                <button class="btn btn-sm btn-outline-primary">Tambah</button>
+              </div>
+            </form>
+            <hr>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead><tr class="text-muted small"><th>Due</th><th>Done</th><th>Result</th><th>Note</th></tr></thead>
+                <tbody>
+                  {% for r in kir %}
+                    <tr>
+                      <td>{{ r.due_date }}</td>
+                      <td>{{ r.done_date or "-" }}</td>
+                      <td>{{ r.result or "-" }}</td>
+                      <td>{{ r.note or "-" }}</td>
+                    </tr>
+                  {% endfor %}
+                  {% if kir|length == 0 %}
+                    <tr><td colspan="4" class="text-muted small">Belum ada data.</td></tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Servis -->
+          <div class="tab-pane fade" id="servis" role="tabpanel">
+            <div class="fw-semibold">History Servis</div>
+            <form class="row g-2 mt-2" method="post" action="{{ url_for('main.service_add', vehicle_id=v.id) }}">
+              <div class="col-4">
+                <label class="form-label small">Service date</label>
+                <input class="form-control form-control-sm" name="service_date" placeholder="YYYY-MM-DD" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Odometer (km)</label>
+                <input class="form-control form-control-sm" name="odometer_km" placeholder="contoh: 120000">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Cost</label>
+                <input class="form-control form-control-sm" name="cost">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">Vendor</label>
+                <input class="form-control form-control-sm" name="vendor">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">Note</label>
+                <input class="form-control form-control-sm" name="note">
+              </div>
+              <div class="col-12">
+                <button class="btn btn-sm btn-outline-primary">Tambah</button>
+              </div>
+            </form>
+            <hr>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead><tr class="text-muted small"><th>Tanggal</th><th>Odo</th><th>Vendor</th><th>Cost</th><th>Note</th></tr></thead>
+                <tbody>
+                  {% for r in service %}
+                    <tr>
+                      <td>{{ r.service_date }}</td>
+                      <td>{{ r.odometer_km or "-" }}</td>
+                      <td>{{ r.vendor or "-" }}</td>
+                      <td>{{ r.cost or "-" }}</td>
+                      <td>{{ r.note or "-" }}</td>
+                    </tr>
+                  {% endfor %}
+                  {% if service|length == 0 %}
+                    <tr><td colspan="5" class="text-muted small">Belum ada data.</td></tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- User -->
+          <div class="tab-pane fade" id="user" role="tabpanel">
+            <div class="fw-semibold">History User Kendaraan</div>
+            <form class="row g-2 mt-2" method="post" action="{{ url_for('main.user_add', vehicle_id=v.id) }}">
+              <div class="col-6">
+                <label class="form-label small">User name</label>
+                <input class="form-control form-control-sm" name="user_name" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small">PT pemakai (snapshot)</label>
+                <input class="form-control form-control-sm" name="company_name" placeholder="contoh: PT ABC">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Start</label>
+                <input class="form-control form-control-sm" name="start_date" placeholder="YYYY-MM-DD" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label small">End</label>
+                <input class="form-control form-control-sm" name="end_date" placeholder="YYYY-MM-DD">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Note</label>
+                <input class="form-control form-control-sm" name="note">
+              </div>
+              <div class="col-12">
+                <button class="btn btn-sm btn-outline-primary">Tambah</button>
+              </div>
+            </form>
+            <hr>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead><tr class="text-muted small"><th>User</th><th>PT</th><th>Start</th><th>End</th><th>Note</th></tr></thead>
+                <tbody>
+                  {% for r in users %}
+                    <tr>
+                      <td>{{ r.user_name }}</td>
+                      <td>{{ r.company_name or "-" }}</td>
+                      <td>{{ r.start_date }}</td>
+                      <td>{{ r.end_date or "-" }}</td>
+                      <td>{{ r.note or "-" }}</td>
+                    </tr>
+                  {% endfor %}
+                  {% if users|length == 0 %}
+                    <tr><td colspan="5" class="text-muted small">Belum ada data.</td></tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Plat -->
+          <div class="tab-pane fade" id="plat" role="tabpanel">
+            <div class="fw-semibold">History Plat</div>
+            <form class="row g-2 mt-2" method="post" action="{{ url_for('main.plate_add', vehicle_id=v.id) }}">
+              <div class="col-4">
+                <label class="form-label small">Tanggal ganti</label>
+                <input class="form-control form-control-sm" name="changed_on" placeholder="YYYY-MM-DD" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Plat sebelum</label>
+                <input class="form-control form-control-sm" name="plate_before" value="{{ v.plate_old or '' }}">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">Plat sesudah</label>
+                <input class="form-control form-control-sm" name="plate_after" value="{{ v.plate_new or '' }}">
+              </div>
+              <div class="col-12">
+                <label class="form-label small">Note</label>
+                <input class="form-control form-control-sm" name="note">
+              </div>
+              <div class="col-12">
+                <button class="btn btn-sm btn-outline-primary">Tambah</button>
+              </div>
+            </form>
+            <hr>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead><tr class="text-muted small"><th>Tanggal</th><th>Before</th><th>After</th><th>Note</th></tr></thead>
+                <tbody>
+                  {% for r in plates %}
+                    <tr>
+                      <td>{{ r.changed_on }}</td>
+                      <td>{{ r.plate_before or "-" }}</td>
+                      <td>{{ r.plate_after or "-" }}</td>
+                      <td>{{ r.note or "-" }}</td>
+                    </tr>
+                  {% endfor %}
+                  {% if plates|length == 0 %}
+                    <tr><td colspan="4" class="text-muted small">Belum ada data.</td></tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

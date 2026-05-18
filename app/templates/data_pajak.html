@@ -1,0 +1,1624 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --bg1:#0b2343;
+  --bg2:#133a69;
+  --panel:#12355f;
+  --panel2:#0f2d54;
+  --blue:#1e5aa8;
+  --line:rgba(255,255,255,.12);
+  --line-soft:rgba(255,255,255,.07);
+  --text:#fff;
+  --soft:rgba(255,255,255,.82);
+  --muted:rgba(255,255,255,.60);
+  --warn:#f4b326;
+  --warn2:#ffd15f;
+  --danger:#ff6b6b;
+  --safe:#8fd19e;
+  --soon:#ffd166;
+  --empty:#c7ced9;
+}
+
+/* Layout ringan: minim shadow, blur, dan gradient berlapis */
+html,body{
+  height:100%;
+  overflow:hidden;
+  background:var(--bg1);
+}
+body{
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+
+}
+.content-wrap{
+  min-height:unset;
+  height:calc(100vh - 88px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.wrap{
+  width:100%;
+  padding:10px 18px;
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* Typography */
+.page-head,.grid-head,.table-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.page-head{margin-bottom:8px}
+.title{
+  margin:0;
+  color:var(--text);
+  font-weight:900;
+  font-size:1.3rem;
+  line-height:1.1;
+}
+.sec{
+  margin:0;
+  color:var(--text);
+  font-size:1.02rem;
+  font-weight:900;
+  line-height:1.1;
+  text-transform:uppercase;
+}
+.sub,.note,.table-count{
+  margin:.28rem 0 0;
+  color:var(--muted);
+  font-size:.82rem;
+  line-height:1.3;
+}
+.form-label{
+  color:var(--muted);
+  font-size:.71rem;
+  font-weight:600;
+  margin:0 0 2px;
+}
+
+/* Panel */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+  border-radius:4px;
+  box-shadow:none;
+}
+.panel-pad{padding:8px}
+.panel-flex{
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+.grid-shell{
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:10px;
+  background:rgba(255,255,255,.025);
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+.grid-head{
+  margin-bottom:10px;
+  align-items:flex-start;
+}
+.grid-head-left{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-height:48px;
+}
+
+/* Form dan tombol */
+.form-control,.form-select,.custom-select-btn{
+  width:100%;
+  min-height:32px;
+  height:32px;
+  border-radius:4px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:#10233f;
+  font-size:.82rem;
+  padding:0 11px;
+}
+.form-control::placeholder,textarea.form-control::placeholder{color:#7c879a}
+.form-control:focus,.form-select:focus,textarea.form-control:focus{
+  border-color:var(--warn);
+  box-shadow:0 0 0 .14rem rgba(244,179,38,.14);
+}
+.search-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.search-field-main{flex:1 1 0;min-width:0}
+.search-field-status{flex:0 0 180px}
+.search-field-pt{flex:0 0 160px}
+
+.btn-warning,.btn-pay,.btn-modal-submit,.detail-dropdown-btn{
+  height:32px;
+  border-radius:4px;
+  font-size:.8rem;
+  font-weight:900;
+  background:var(--warn);
+  border:1px solid var(--warn);
+  color:#132849;
+  cursor:pointer;
+}
+.btn-warning:hover,.btn-pay:hover,.btn-modal-submit:hover,.detail-dropdown-btn:hover{
+  background:var(--warn2);
+  border-color:var(--warn2);
+  color:#132849;
+}
+.btn-secondary{
+  background:#4d6a8a;
+  border-color:#4d6a8a;
+  color:#fff;
+}
+.btn-secondary:hover{
+  background:#5a7898;
+  border-color:#5a7898;
+}
+.btn-home,.btn-reset-search,.mini-tool,.btn-modal-close,.btn-export-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-decoration:none;
+  cursor:pointer;
+  user-select:none;
+  border:1px solid var(--line);
+  color:#fff;
+  background:rgba(255,255,255,.045);
+}
+.btn-home,.btn-reset-search,.btn-modal-close{
+  height:34px;
+  padding:0 12px;
+  border-radius:4px;
+  font-size:.79rem;
+  font-weight:800;
+}
+.btn-home:hover,.btn-reset-search:hover,.mini-tool:hover,.btn-modal-close:hover,.btn-export-icon:hover{
+  background:rgba(255,255,255,.09);
+  color:#ffd15f;
+  border-color:rgba(255,255,255,.20);
+}
+
+/* Custom select */
+.custom-select-wrap{position:relative;width:100%}
+.detail-dropdown-wrap{position:relative;display:inline-block;width:auto}
+.custom-select-btn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.custom-select-btn span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.custom-select-drop,.detail-dropdown-list{
+  display:none;
+  position:absolute;
+  top:calc(100% + 4px);
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:4px;
+  z-index:9999;
+  overflow:hidden;
+  box-shadow:none;
+}
+.custom-select-drop{left:0;min-width:220px;width:220px}
+.detail-dropdown-list{right:0;width:280px;z-index:999}
+.custom-select-drop.open,.detail-dropdown-list.open{display:block}
+.custom-select-search,.detail-dropdown-search{
+  width:100%;
+  border:0;
+  border-bottom:1px solid var(--line-soft);
+  background:var(--panel);
+  color:#fff;
+  font-size:.80rem;
+  font-weight:600;
+  padding:9px 12px;
+  outline:none;
+}
+.custom-select-search::placeholder,.detail-dropdown-search::placeholder{color:rgba(255,255,255,.38)}
+.custom-select-list,.detail-dropdown-items{
+  max-height:220px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:4px 0;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.18) transparent;
+}
+.cso,.detail-item-option{
+  padding:8px 14px;
+  font-size:.82rem;
+  color:#fff;
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:block;
+  width:100%;
+  text-align:left;
+  text-decoration:none;
+  border:0;
+  background:none;
+}
+.cso:hover,.cso.selected,.detail-item-option:hover{
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  text-decoration:none;
+}
+.cso.selected{font-weight:800}
+
+/* Toolbar */
+.grid-toolbar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.toolbar-actions{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:4px;
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+}
+.mini-tool,.btn-export-icon{
+  width:32px;
+  height:32px;
+  border-radius:4px;
+  padding:0;
+}
+.mini-tool svg,.btn-export-icon svg{
+  width:14px;
+  height:14px;
+  stroke:currentColor;
+  stroke-width:2;
+  fill:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.mini-tool:disabled,.mini-tool.is-disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+.detail-dropdown-btn{
+  height:34px;
+  padding:0 12px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.detail-dropdown-btn .caret{
+  border-left:4px solid transparent;
+  border-right:4px solid transparent;
+  border-top:5px solid currentColor;
+  display:inline-block;
+}
+
+/* Tabel: area paling dioptimalkan */
+.table-wrap{
+  overflow:auto;
+  border-radius:4px;
+  border:1px solid var(--line-soft);
+  flex:1 1 0;
+  min-height:0;
+  background:#0b2649;
+  transform:translateZ(0); /* promote to GPU layer for smooth scroll */
+}
+.table-sg{
+  width:100%;
+  margin:0;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:1380px;
+  table-layout:fixed;
+  font-family:'Poppins',Arial,Helvetica,sans-serif;
+}
+.table-sg th,.table-sg td{
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.10);
+}
+.table-sg th:last-child,.table-sg td:last-child{box-shadow:none}
+.table-sg thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:var(--blue);
+  color:var(--warn2);
+  padding:8px 10px;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+  border-bottom:2px solid rgba(255,209,95,.30);
+  text-align:left;
+  white-space:nowrap;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+}
+.table-sg tbody tr{background:#0e2c55}
+.table-sg tbody tr:nth-child(even){background:#0c274b}
+.table-sg tbody tr:hover{background:#143761}
+.table-sg tbody td{box-shadow:inset -1px 0 0 rgba(255,255,255,.10),inset 0 1px 0 rgba(255,255,255,.07)}
+.table-sg tbody tr.is-selected{
+  background:#31588c;
+  outline:1px solid rgba(255,209,95,.55);
+  outline-offset:-1px;
+}
+.table-sg tbody td{
+  color:rgba(255,255,255,.92);
+  padding:8px 10px;
+  font-size:12.5px;
+  font-weight:500;
+  line-height:1.3;
+  vertical-align:middle;
+  white-space:normal;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+
+/* Column width */
+.table-sg col.no{width:54px}
+.table-sg col.c-pt{width:140px}
+.table-sg col.c-kendaraan{width:320px}
+.table-sg col.c-exp{width:170px}
+.table-sg col.c-status{width:150px}
+.table-sg col.c-vendor{width:190px}
+.table-sg col.c-aksi{width:120px}
+.table-sg col.c-note{width:240px}
+.table-sg col.c-export{width:80px}
+
+/* Table content */
+.cell-no{text-align:center}
+.vehicle-main{font-weight:800;color:#fff;line-height:1.28}
+.vehicle-detail-link,.pt-detail-link{
+  color:inherit;
+  text-decoration:none;
+  font-weight:800;
+}
+.vehicle-detail-link:hover,.pt-detail-link:hover{
+  color:var(--warn2);
+  text-decoration:none;
+}
+.vehicle-sub{
+  margin-top:4px;
+  color:rgba(255,255,255,.68);
+  font-size:11px;
+  line-height:1.25;
+}
+.table-note{color:rgba(255,255,255,.78)}
+.action-stack{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.action-stack .btn-pay{
+  height:26px;
+  padding:0 8px;
+  border-radius:4px;
+  font-size:.72rem;
+  white-space:nowrap;
+}
+.empty-box{
+  padding:15px;
+  color:rgba(255,255,255,.7);
+  font-size:.82rem;
+}
+
+/* Badge */
+.badge-status{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+  border:1px solid transparent;
+}
+.badge-danger{background:rgba(255,107,107,.18);color:#ffd2d2;border-color:rgba(255,107,107,.35)}
+.badge-soon{background:rgba(255,209,102,.18);color:#ffebb3;border-color:rgba(255,209,102,.35)}
+.badge-safe{background:rgba(143,209,158,.16);color:#d5ffe0;border-color:rgba(143,209,158,.35)}
+.badge-empty{background:rgba(199,206,217,.14);color:#eef3fb;border-color:rgba(199,206,217,.30)}
+
+/* Modal */
+.modal-dark{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(3,11,24,.75);
+  z-index:1200;
+  padding:16px;
+  overflow-y:auto;
+}
+.modal-dark.show{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.modal-dark .modal-dialog{
+  max-width:860px;
+  width:94%;
+  margin:auto;
+  transform:none;
+  opacity:1;
+}
+.modal-dark .modal-content{
+  background:#12355f;
+  color:#fff;
+  border:1px solid var(--line);
+  border-radius:4px;
+  box-shadow:none;
+}
+.modal-dark .modal-header,.modal-dark .modal-footer{
+  border-color:var(--line-soft);
+  padding:12px 16px;
+}
+.modal-dark .modal-body{padding:14px 16px}
+.modal-dark .btn-close{filter:invert(1)}
+.modal-dark .form-control,.modal-dark .form-select{
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  min-height:30px;
+  height:30px;
+  border-radius:4px;
+  border:1px solid var(--line);
+  font-size:.8rem;
+}
+.modal-dark .form-select option{background:#0d2a4e;color:#fff}
+.modal-dark .form-control::placeholder{color:rgba(255,255,255,.38)}
+.modal-dark .form-control[readonly]{
+  background:rgba(255,255,255,.05);
+  color:var(--warn2);
+}
+.modal-dark .form-control[type="date"]{background:#fff;color:#111}
+.modal-dark textarea.form-control{
+  height:auto;
+  min-height:72px;
+  padding-top:8px;
+  padding-bottom:8px;
+  background:var(--panel);
+  color:#fff;
+}
+.info-card{
+  min-height:30px;
+  border-radius:4px;
+  border:1px solid var(--line-soft);
+  background:rgba(255,255,255,.05);
+  display:flex;
+  align-items:center;
+  padding:0 10px;
+  color:#fff;
+  font-size:.8rem;
+  font-weight:600;
+}
+.alert-inline{
+  padding:8px 10px;
+  border-radius:4px;
+  border:1px solid rgba(255,209,102,.25);
+  background:rgba(255,209,102,.08);
+  color:#ffe7a3;
+  font-size:.75rem;
+  line-height:1.4;
+}
+.modal-footer-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  width:100%;
+}
+.detail-modal .modal-body{max-height:70vh;overflow-y:auto}
+.detail-section{margin-bottom:20px}
+.detail-section h6{
+  margin:0 0 12px;
+  color:var(--warn2);
+  font-size:.9rem;
+  font-weight:800;
+  text-transform:uppercase;
+}
+.detail-item{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px solid var(--line-soft);
+  font-size:.85rem;
+}
+.detail-label{color:var(--muted);font-weight:600}
+.detail-value{color:#fff;text-align:right;font-weight:500}
+
+/* History */
+.history-item{
+  padding:12px;
+  background:rgba(255,255,255,.04);
+  border-radius:4px;
+  border-left:3px solid rgba(244,179,38,.5);
+  margin-bottom:8px;
+  font-size:.8rem;
+}
+.history-item .hist-date{color:var(--warn2);font-weight:700;margin-bottom:4px}
+.history-item .hist-text{color:rgba(255,255,255,.8);line-height:1.4}
+.history-toggle-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line-soft);
+  border-radius:4px;
+  padding:9px 14px;
+  cursor:pointer;
+  color:var(--warn2);
+  font-size:.84rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+}
+.history-toggle-btn:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.18);
+}
+.history-toggle-hint{
+  font-size:.72rem;
+  font-weight:500;
+  color:rgba(255,255,255,.45);
+  text-transform:none;
+  letter-spacing:0;
+}
+.history-collapsible{margin-top:10px}
+
+/* Toast ringan: tanpa backdrop-filter dan shadow besar */
+.sg-toast{
+  position:fixed;
+  bottom:22px;
+  right:22px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#0a1832;
+  border:1px solid var(--line);
+  border-left:3px solid var(--warn2);
+  border-radius:4px;
+  padding:10px 16px 10px 12px;
+  color:rgba(255,255,255,.92);
+  font-size:.78rem;
+  font-weight:600;
+  z-index:9999;
+  min-width:200px;
+  max-width:320px;
+  transform:translateX(calc(100% + 32px));
+  opacity:0;
+  transition:transform .22s ease,opacity .18s ease;
+  pointer-events:none;
+}
+.sg-toast.show{transform:translateX(0);opacity:1}
+.sg-toast.success{border-left-color:#4ade80}
+.sg-toast.danger{border-left-color:#f87171}
+.sg-toast.warning{border-left-color:var(--warn2)}
+.sg-toast-icon{
+  flex:0 0 22px;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  background:rgba(255,255,255,.07);
+}
+.sg-toast-msg{flex:1;line-height:1.4}
+
+/* Highlight: tetap ada, tapi animasi lebih ringan */
+.hl-alert-row,
+.table-sg tbody tr.hl-alert-row,
+.table-sg tbody tr:nth-child(odd).hl-alert-row,
+.table-sg tbody tr:nth-child(even).hl-alert-row{
+  background:rgba(217,45,32,.32);
+  outline:2px solid #d92d20;
+  outline-offset:-2px;
+}
+@media (prefers-reduced-motion:no-preference){
+  .hl-alert-row,
+  .table-sg tbody tr.hl-alert-row,
+  .table-sg tbody tr:nth-child(odd).hl-alert-row,
+  .table-sg tbody tr:nth-child(even).hl-alert-row{
+    animation:hlPulseLite 1s ease 2;
+  }
+  @keyframes hlPulseLite{
+    50%{background:rgba(217,45,32,.44)}
+  }
+}
+
+/* Responsive */
+@media (max-width:991px){
+  .search-row{flex-wrap:wrap}
+  .search-field-main,.search-field-status,.search-field-pt{flex:1 1 100%}
+}
+@media (max-width:768px){
+  .wrap{padding:12px 12px 18px}
+  .page-head,.grid-head,.table-meta{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .title{font-size:1.46rem}
+  .sub{font-size:.78rem}
+  .grid-toolbar{
+    width:100%;
+    justify-content:flex-start;
+  }
+  .grid-head-left{min-height:auto}
+  .modal-dark .modal-dialog{width:calc(100% - 18px)}
+}
+
+
+/* Tax-specific sections */
+.tax-modal .form-control{background:rgba(255,255,255,.08);color:#fff}
+.tax-modal .form-control[readonly]{background:rgba(255,255,255,.05);color:var(--warn2)}
+.tax-modal .form-control::placeholder{color:rgba(255,255,255,.52)}
+.tax-modal .form-control:focus{background:rgba(255,255,255,.08);color:#fff;border-color:var(--warn);box-shadow:0 0 0 .14rem rgba(244,179,38,.14)}
+.tax-modal input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.8}
+.tax-modal input[type="number"]{font-weight:700;color:#fff}
+.plate-section{background:rgba(255,209,95,.08);border:1px solid rgba(255,209,95,.2);border-radius:4px;padding:12px;margin-bottom:12px}
+.plate-section h6{margin:0 0 10px;color:var(--warn2);font-size:.85rem;font-weight:800}
+.plate-row{display:flex;gap:12px;margin-bottom:8px}
+.plate-row:last-child{margin-bottom:0}
+.plate-col{flex:1}
+.plate-col label{display:block;color:var(--muted);font-size:.73rem;margin-bottom:4px;font-weight:600}
+.plate-col .form-control{background:rgba(255,255,255,.08);color:#fff}
+@media (max-width:768px){.plate-row{flex-direction:column}}
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <h1 class="title">Data Pajak</h1>
+    <a class="btn-home" href="{{ url_for('main.home') }}">← Home</a>
+  </div>
+
+  <div class="panel panel-pad mb-3">
+    <form method="get" action="{{ url_for('main.go_data_pajak') }}" autocomplete="off">
+      <div class="search-row">
+        <div class="search-field-main">
+          <input class="form-control" name="q" value="{{ q or '' }}" placeholder="Cari kendaraan, plat, merk, tipe, nama aset...">
+        </div>
+
+        <div class="search-field-status">
+          <div class="custom-select-wrap" id="statusSelectWrap">
+            <input type="hidden" name="status" id="statusHidden" value="{{ status or '' }}">
+            <button type="button" class="custom-select-btn" id="statusBtn">
+              <span id="statusLabel">{% if status == 'overdue' %}Terlambat{% elif status == 'soon' %}Jatuh tempo dekat{% elif status == 'safe' %}Aman{% elif status == 'empty' %}Belum Diisi{% elif status == 'paid' %}Sudah dibayar{% elif status == 'borrowed' %}Dipinjam{% elif status == 'done' %}Selesai{% else %}Semua Status{% endif %}</span>
+              <i class="bi bi-chevron-down" style="font-size:.65rem;opacity:.6"></i>
+            </button>
+            <div class="custom-select-drop" id="statusDrop">
+              <div class="custom-select-list" id="statusList">
+                <div class="cso" data-val="">Semua Status</div>
+                <div class="cso" data-val="overdue">Terlambat</div>
+                <div class="cso" data-val="soon">Jatuh tempo dekat</div>
+                <div class="cso" data-val="safe">Aman</div>
+                <div class="cso" data-val="empty">Belum Diisi</div>
+                <div class="cso" data-val="paid">Sudah dibayar</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-field-pt">
+          <div class="custom-select-wrap" id="ptSelectWrap">
+            <input type="hidden" name="company" id="ptHidden" value="{{ company or '' }}">
+            <button type="button" class="custom-select-btn" id="ptBtn">
+              <span id="ptLabel">{{ company if company else 'Semua PT' }}</span>
+              <i class="bi bi-chevron-down" style="font-size:.65rem;opacity:.6"></i>
+            </button>
+            <div class="custom-select-drop" id="ptDrop">
+              <input type="text" class="custom-select-search" id="ptSearch" placeholder="Cari PT...">
+              <div class="custom-select-list" id="ptList">
+                <div class="cso" data-val="">Semua PT</div>
+                {% for c in companies or [] %}
+                <div class="cso" data-val="{{ c }}">{{ c }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-warning">Cari</button>
+        <a href="{{ url_for('main.go_data_pajak') }}" class="btn-reset-search">Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel panel-pad panel-flex">
+    <div class="grid-shell" id="taxGridShell">
+      <div class="grid-head">
+        <div class="grid-head-left">
+          <h2 class="sec">Daftar Pajak</h2>
+          <p class="note">Total data: {{ items|length }} kendaraan</p>
+        </div>
+        <div class="grid-toolbar">
+          <div class="toolbar-actions">
+            <button type="button" class="mini-tool" data-action="reset-select" title="Reset pilihan" aria-label="Reset pilihan">
+              <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 3v6h6"></path></svg>
+            </button>
+            <button type="button" class="mini-tool" data-role="edit-btn" title="Edit Exp Pajak & Catatan" aria-label="Edit Exp Pajak & Catatan">
+              <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg>
+            </button>
+            <div class="detail-dropdown-wrap">
+              <button type="button" class="detail-dropdown-btn" id="detailDropdownBtn">
+                <span>Detail</span>
+                <span class="caret" aria-hidden="true"></span>
+              </button>
+              <div class="detail-dropdown-list" id="detailDropdownList">
+                <input type="text" class="detail-dropdown-search" id="detailSearch" placeholder="Cari kendaraan...">
+                <div class="detail-dropdown-items" id="detailItems">
+                  {% for r in items %}
+                  {% set v = r.vehicle %}
+                  {% set nama_utama = (v.active_name or v.new_asset_name or v.name_as_asset_pt or r.kendaraan or '-') %}
+                  <div class="detail-item-option" data-target="#detailPajak{{ r.vehicle_id }}">
+                    {{ nama_utama }} ({{ r.no_polisi or '-' }})
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        {% if items %}
+        <table class="table-sg js-grid-table">
+          <colgroup>
+            <col class="no"><col class="c-pt"><col class="c-kendaraan">
+            <col class="c-exp"><col class="c-status">
+            <col class="c-exp"><col class="c-status">
+            <col class="c-aksi"><col class="c-note"><col class="c-export">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>No</th><th>PT</th><th>Kendaraan</th>
+              <th>Exp Tahunan</th><th>Status Tahunan</th>
+              <th>Exp 5 Tahunan</th><th>Status 5 Tahunan</th>
+              <th>Aksi</th><th>Catatan</th><th>Export</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in items %}
+            {% set v = r.vehicle %}
+            {% set nama_utama = (v.active_name or v.new_asset_name or v.name_as_asset_pt or r.kendaraan or '-') %}
+            {% set note_clean = r.note or '' %}
+            <tr class="js-select-row{% if highlight_id and highlight_id == r.vehicle_id %} hl-alert-row{% endif %}"
+                data-vehicle-id="{{ r.vehicle_id }}"
+                data-record-id="{{ r.record_id or '' }}"
+                data-annual-due="{{ r.annual_due_date.strftime('%Y-%m-%d') if r.annual_due_date else '' }}"
+                data-note="{{ note_clean|e }}"
+                data-vehicle-name="{{ nama_utama }}">
+              <td class="cell-no">{{ r.no }}</td>
+              <td>{% if r.pt %}<a class="pt-detail-link" href="{{ url_for('main.perusahaan_ringkasan', company=r.pt, next=request.full_path) }}">{{ r.pt }}</a>{% else %}-{% endif %}</td>
+              <td>
+                <div class="vehicle-main"><a class="vehicle-detail-link" href="{{ url_for('main.vehicle_detail_page', vehicle_id=r.vehicle_id, next=request.full_path) }}">{{ nama_utama }}</a></div>
+                <div class="vehicle-sub">{{ r.no_polisi or '-' }}</div>
+              </td>
+              <td>{{ fmt_tgl(r.annual_due_date) if r.annual_due_date else '-' }}</td>
+              <td>
+                {% if r.annual_status == 'empty' %}<span class="badge-status badge-empty">Belum Diisi</span>
+                {% elif r.annual_status == 'paid' %}<span class="badge-status badge-safe">Sudah dibayar</span>
+                {% elif r.annual_status == 'overdue' %}<span class="badge-status badge-danger">Lewat jatuh tempo</span>
+                {% elif r.annual_status == 'soon' %}<span class="badge-status badge-soon">Jatuh tempo dekat</span>
+                {% else %}<span class="badge-status badge-safe">Aman</span>{% endif %}
+              </td>
+              <td>{{ fmt_tgl(r.five_due_date) if r.five_due_date else '-' }}</td>
+              <td>
+                {% if r.five_status == 'empty' %}<span class="badge-status badge-empty">Belum Diisi</span>
+                {% elif r.five_status == 'paid' %}<span class="badge-status badge-safe">Sudah dibayar</span>
+                {% elif r.five_status == 'overdue' %}<span class="badge-status badge-danger">Lewat jatuh tempo</span>
+                {% elif r.five_status == 'soon' %}<span class="badge-status badge-soon">Jatuh tempo dekat</span>
+                {% else %}<span class="badge-status badge-safe">Aman</span>{% endif %}
+                {% if r.plate_warning %}<br><span class="badge-status badge-soon" style="margin-top:4px;font-size:10px">⚠️ Plat belum diganti</span>{% endif %}
+              </td>
+              <td class="cell-no">
+                <div class="action-stack">
+                  <button type="button" class="btn-pay btn-open-tax-modal" data-target="#modalPajak{{ r.vehicle_id }}" data-can-pay="{{ '1' if r.can_pay else '0' }}">Bayar</button>
+                </div>
+              </td>
+              <td><div class="table-note">{{ note_clean or '' }}</div></td>
+              <td class="cell-no"><button type="button" class="btn-export-icon js-open-export-modal" data-target="#exportPajak{{ r.vehicle_id }}" title="Export Excel" aria-label="Export Excel">
+                <svg viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>
+              </button></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-box">Belum ada data pajak.</div>
+        {% endif %}
+      </div>
+
+      <div class="table-meta">
+        <div class="table-count" data-role="table-count">Menampilkan 0 dari 0 data</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-dark" id="modalEditExpPajak" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Edit Exp Pajak Tahunan & Catatan</h5>
+          <div class="note" style="margin:0">Input exp pajak tahunan. Exp pajak 5 tahunan otomatis mengikuti +5 tahun dari tanggal ini.</div>
+        </div>
+        <button type="button" class="btn-close btn-close-edit-pajak" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Kendaraan</label>
+            <div class="info-card" id="editPajakVehicleName">-</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Exp Pajak Tahunan</label>
+            <input type="date" class="form-control" id="editAnnualDue">
+            <div style="margin-top:6px;font-size:.75rem;color:rgba(255,255,255,.5)">
+              Exp pajak 5 tahunan (auto): <strong id="editFiveDuePreview" style="color:#ffd15f">-</strong>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Catatan</label>
+            <input type="text" class="form-control" id="editPajakNote" placeholder="Masukkan catatan...">
+          </div>
+          <div class="col-12">
+            <div class="modal-footer-actions">
+              <button type="button" class="btn-modal-close btn-close-edit-pajak">Batal</button>
+              <button type="button" class="btn-modal-submit btn-secondary" id="btnClearEditPajak">Kosongkan</button>
+              <button type="button" class="btn-modal-submit" id="btnSaveEditPajak">Simpan Perubahan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% for r in items %}
+{% set v = r.vehicle %}
+{% set nama_utama = (v.active_name or v.new_asset_name or v.name_as_asset_pt or r.kendaraan or '-') %}
+{% set active_kind = 'annual' if r.action_kind in ['annual','setup'] else 'five' %}
+{% set active_kind_label = 'Pajak Tahunan' if active_kind == 'annual' else 'Pajak 5 Tahunan' %}
+{% set active_due = r.annual_due_date if active_kind == 'annual' else r.five_due_date %}
+{% set active_paid = r.annual_paid_date if active_kind == 'annual' else r.five_paid_date %}
+{% set active_amount = r.annual_amount if active_kind == 'annual' else r.five_amount %}
+{% set active_status = r.annual_status if active_kind == 'annual' else r.five_status %}
+{% set can_pay = r.can_pay %}
+{% set plate_before = r.vehicle.plate_old or '' %}
+{% set plate_after = r.vehicle.plate_new or '' %}
+
+<div class="modal modal-dark tax-modal" id="modalPajak{{ r.vehicle_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Bayar Pajak</h5>
+          <div class="note" style="margin:0">Jenis pembayaran dideteksi otomatis dari data exp yang aktif.</div>
+        </div>
+        <button type="button" class="btn-close btn-close-tax" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-7">
+            <label class="form-label">Kendaraan</label>
+            <input class="form-control" value="{{ nama_utama }}" readonly>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">No Polisi</label>
+            <input class="form-control" value="{{ r.no_polisi or '-' }}" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Jenis Pembayaran Aktif</label>
+            <div class="info-card">{{ active_kind_label }}</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Status Saat Ini</label>
+            <div class="info-card">
+              {% if active_status == 'paid' %}Sudah lunas
+              {% elif active_status == 'empty' %}Belum diisi
+              {% elif active_status == 'overdue' %}Belum lunas - lewat jatuh tempo
+              {% elif active_status == 'soon' %}Belum lunas - jatuh tempo dekat
+              {% else %}Belum lunas{% endif %}
+            </div>
+          </div>
+          <div class="col-12">
+            {% if can_pay %}
+              <div class="alert-inline">Exp aktif: {{ fmt_tgl(active_due) }}. Sistem akan otomatis memproses sebagai <strong>{{ active_kind_label }}</strong>.</div>
+            {% elif active_due %}
+              <div class="alert-inline">Belum bisa dibayar sekarang. Jadwal berikutnya: <strong>{{ fmt_tgl(active_due) }}</strong>.</div>
+            {% else %}
+              <div class="alert-inline">Belum bisa bayar sebelum isi tanggal exp pajak.</div>
+            {% endif %}
+          </div>
+          <div class="col-12">
+            <form class="tax-pay-form" data-vehicle-id="{{ r.vehicle_id }}" data-record-id="{{ r.record_id or '' }}" data-kind="{{ active_kind }}" data-due-date="{{ active_due.strftime('%Y-%m-%d') if active_due else '' }}">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Tanggal Bayar</label>
+                  <input type="date" class="form-control" name="paid_date" value="" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Nominal Bayar</label>
+                  <input type="number" step="0.01" class="form-control" name="amount" value="" placeholder="Masukkan nominal" required>
+                </div>
+                
+                <!-- PLAT HANYA UNTUK PAJAK 5 TAHUNAN -->
+                {% if active_kind == 'five' %}
+                <div class="col-12">
+                  <div class="plate-section">
+                    <h6>Informasi Ganti Plat (Pajak 5 Tahunan)</h6>
+                    <div class="plate-row">
+                      <div class="plate-col">
+                        <label>Plat Lama</label>
+                        <input type="text" class="form-control" name="plate_before" value="{{ plate_before }}" placeholder="Contoh: B 1234 ABC">
+                      </div>
+                      <div class="plate-col">
+                        <label>Plat Baru</label>
+                        <input type="text" class="form-control" name="plate_after" value="{{ plate_after }}" placeholder="Contoh: B 5678 XYZ">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                
+                <div class="col-12">
+                  <div class="modal-footer-actions">
+                    <a href="{{ url_for('main.history_pembayaran') }}" class="btn-modal-close">History Pembayaran</a>
+                    <button type="button" class="btn-modal-close btn-close-tax">Tutup</button>
+                    <button type="button" class="btn btn-modal-submit js-bayar-pajak">Bayar</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-dark detail-modal" id="detailPajak{{ r.vehicle_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Detail Pajak</h5>
+          <div class="note" style="margin:0">Ringkasan data pajak & export Excel</div>
+        </div>
+        <button type="button" class="btn-close btn-close-detail" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <h6>Informasi Kendaraan</h6>
+          <div class="detail-item"><span class="detail-label">Nama</span><span class="detail-value">{{ nama_utama }}</span></div>
+          <div class="detail-item"><span class="detail-label">No Polisi</span><span class="detail-value">{{ r.no_polisi or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">PT</span><span class="detail-value">{% if r.pt %}<a class="pt-detail-link" href="{{ url_for('main.perusahaan_ringkasan', company=r.pt, next=request.full_path) }}">{{ r.pt }}</a>{% else %}-{% endif %}</span></div>
+          <div class="detail-item"><span class="detail-label">Merk</span><span class="detail-value">{{ r.vehicle.merk or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Tipe</span><span class="detail-value">{{ r.vehicle.type or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Jenis</span><span class="detail-value">{{ r.vehicle.jenis or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Tahun Pemakaian</span><span class="detail-value">{{ r.vehicle.year_of_use or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Exp Tahunan (aktif)</span><span class="detail-value">{{ fmt_tgl(r.annual_due_date) if r.annual_due_date else '-' }}</span></div>
+          <div class="detail-item">
+            <span class="detail-label">Status Tahunan</span>
+            <span class="detail-value">{% if r.annual_status=='paid' %}Sudah dibayar{% elif r.annual_status=='overdue' %}Lewat jatuh tempo{% elif r.annual_status=='soon' %}Jatuh tempo dekat{% elif r.annual_status=='empty' %}Belum diisi{% else %}Aman{% endif %}</span>
+          </div>
+          <div class="detail-item"><span class="detail-label">Exp 5 Tahunan</span><span class="detail-value">{{ fmt_tgl(r.five_due_date) if r.five_due_date else '-' }}</span></div>
+          <div class="detail-item">
+            <span class="detail-label">Status 5 Tahunan</span>
+            <span class="detail-value">{% if r.five_status=='paid' %}Sudah dibayar{% elif r.five_status=='overdue' %}Lewat jatuh tempo{% elif r.five_status=='soon' %}Jatuh tempo dekat{% elif r.five_status=='empty' %}Belum diisi{% else %}Aman{% endif %}</span>
+          </div>
+          <div class="detail-item"><span class="detail-label">Jenis Aktif</span><span class="detail-value">{{ active_kind_label }}</span></div>
+          <div class="detail-item"><span class="detail-label">Catatan</span><span class="detail-value">{{ r.note or '-' }}</span></div>
+        </div>
+        <div class="detail-section">
+          <h6>Ringkasan Pembayaran Terakhir</h6>
+          <div class="detail-item">
+            <span class="detail-label">Nominal Tahunan Terakhir</span>
+            <span class="detail-value">{% if r.annual_amount %}Rp {{ '{:,.0f}'.format(r.annual_amount|float).replace(',','.') }}{% else %}-{% endif %}</span>
+          </div>
+          <div class="detail-item"><span class="detail-label">Tgl Bayar Tahunan</span><span class="detail-value">{{ fmt_tgl(r.annual_paid_date) if r.annual_paid_date else '-' }}</span></div>
+          <div class="detail-item">
+            <span class="detail-label">Nominal 5 Tahunan Terakhir</span>
+            <span class="detail-value">{% if r.five_amount %}Rp {{ '{:,.0f}'.format(r.five_amount|float).replace(',','.') }}{% else %}-{% endif %}</span>
+          </div>
+          <div class="detail-item"><span class="detail-label">Tgl Bayar 5 Tahunan</span><span class="detail-value">{{ fmt_tgl(r.five_paid_date) if r.five_paid_date else '-' }}</span></div>
+        </div>
+        <div class="detail-section">
+          <h6>Filter Export Excel</h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Dari Tanggal</label>
+              <input type="date" class="form-control js-export-date-from">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Sampai Tanggal</label>
+              <input type="date" class="form-control js-export-date-to">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Jenis Export</label>
+              <select class="form-select js-export-type">
+                <option value="all" selected>Semua Sheet</option>
+                <option value="summary">Ringkasan Saja</option>
+                <option value="history">Riwayat Gabungan</option>
+                <option value="history_annual">Riwayat Tahunan</option>
+                <option value="history_five">Riwayat 5 Tahunan</option>
+              </select>
+            </div>
+          </div>
+          <div class="alert-inline" style="margin-top:10px">
+            Kosongkan tanggal kalau mau ambil semua data. Isi range tanggal hanya kalau user memang mau rekap periode tertentu.
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h6>Riwayat Pajak</h6>
+          <div data-tax-history-list="{{ r.vehicle_id }}">
+            <p style="color:rgba(255,255,255,.6);font-size:.8rem">Memuat riwayat...</p>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h6>Export Excel</h6>
+          <div class="alert-inline" style="margin-bottom:10px">
+            Export mengikuti filter tanggal yang user isi sendiri. Kalau tanggal dikosongkan, sistem ambil semua data.
+          </div>
+          <div class="modal-footer-actions">
+            <button type="button" class="btn-modal-submit btn-secondary js-export-pajak-excel" data-vehicle-id="{{ r.vehicle_id }}" data-vehicle-name="{{ nama_utama }}" data-export-url="{{ url_for('main.api_pajak_export', vehicle_id=r.vehicle_id) }}">⬇ Ekspor Excel</button>
+            <button type="button" class="btn-modal-close btn-close-detail">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-dark export-modal" id="exportPajak{{ r.vehicle_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Export Excel Pajak</h5>
+          <div class="note" style="margin:0">{{ nama_utama }}{% if r.no_polisi %} - {{ r.no_polisi }}{% endif %}</div>
+        </div>
+        <button type="button" class="btn-close btn-close-export" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <h6>Filter Export Excel</h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Dari Tanggal</label>
+              <input type="date" class="form-control js-export-date-from">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Sampai Tanggal</label>
+              <input type="date" class="form-control js-export-date-to">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Jenis Export</label>
+              <select class="form-select js-export-type">
+                <option value="all" selected>Semua Sheet</option>
+                <option value="summary">Ringkasan Saja</option>
+                <option value="history">Riwayat Gabungan</option>
+                <option value="history_annual">Riwayat Tahunan</option>
+                <option value="history_five">Riwayat 5 Tahunan</option>
+              </select>
+            </div>
+          </div>
+          <div class="alert-inline" style="margin-top:10px">Kosongkan tanggal kalau mau ambil semua data. Isi range tanggal kalau diminta rekapan periode tertentu.</div>
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-modal-submit btn-secondary js-export-pajak-excel" data-vehicle-id="{{ r.vehicle_id }}" data-vehicle-name="{{ nama_utama }}" data-export-url="{{ url_for('main.api_pajak_export', vehicle_id=r.vehicle_id) }}">Ekspor Excel</button>
+          <button type="button" class="btn-modal-close btn-close-export">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<div class="sg-toast" id="sgToast"><div class="sg-toast-icon" id="sgToastIcon"></div><span class="sg-toast-msg" id="sgToastMsg"></span></div>
+
+<script>
+function showToast(msg, type='success'){
+    const t=document.getElementById('sgToast');
+    const icon=document.getElementById('sgToastIcon');
+    const msgEl=document.getElementById('sgToastMsg');
+    if(!t)return;
+    let iconHtml='';
+    if(type==='success') iconHtml=`<svg class="toast-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`;
+    else if(type==='danger') iconHtml=`<svg class="toast-cross-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+    else iconHtml=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffd15f" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>`;
+    if(icon) icon.innerHTML=iconHtml;
+    if(msgEl) msgEl.textContent=msg;
+    t.className=`sg-toast ${type}`;
+    void t.offsetWidth;
+    t.classList.add('show');
+    clearTimeout(t._tid);
+    t._tid=setTimeout(()=>t.classList.remove('show'),3200);
+  }
+
+(()=>{
+
+  const shell=document.getElementById('taxGridShell');
+  if(!shell)return;
+  const table=shell.querySelector('.js-grid-table');
+  const tbody=table&&table.tBodies[0];
+  const rows=tbody?[...tbody.querySelectorAll('.js-select-row')]:[];
+  const tableCount=shell.querySelector('[data-role="table-count"]');
+  const editBtn=shell.querySelector('[data-role="edit-btn"]');
+
+  let state={primary:null,recordId:null,vehicleName:'',annualDue:'',note:''};
+
+  const setPrimaryFromRow=row=>{
+    state.primary=row?.dataset.vehicleId||null;
+    state.recordId=row?.dataset.recordId||null;
+    state.vehicleName=row?.dataset.vehicleName||'';
+    state.annualDue=row?.dataset.annualDue||'';
+    state.note=row?.dataset.note||'';
+  };
+  const syncRow=row=>row.classList.toggle('is-selected',(row.dataset.vehicleId||'')===state.primary);
+  const syncToolbar=()=>{
+    const has=!!state.primary;
+    if(editBtn){editBtn.disabled=!has;editBtn.setAttribute('aria-disabled',has?'false':'true');editBtn.classList.toggle('is-disabled',!has)}
+  };
+  const syncAll=()=>{rows.forEach(syncRow);syncToolbar()};
+  const clearSelection=()=>{
+    state={primary:null,recordId:null,vehicleName:'',annualDue:'',note:''};
+    syncAll();
+    // Hapus highlight merah (alert)
+    document.querySelectorAll('.hl-alert-row').forEach(el => el.classList.remove('hl-alert-row'));
+    // Bersihkan parameter highlight dari URL agar tidak muncul lagi saat refresh manual
+    const url = new URL(window.location);
+    if (url.searchParams.has('highlight')) {
+      url.searchParams.delete('highlight');
+      window.history.replaceState({}, '', url);
+    }
+  };
+  const selectRow=row=>{if(!row)return;setPrimaryFromRow(row);syncAll()};
+
+  const openModal=sel=>{
+    const m=document.querySelector(sel);if(!m)return;
+    m.classList.add('show');m.style.display='block';
+    document.body.classList.add('modal-open');document.body.style.overflow='hidden';
+  };
+  const closeModal=m=>{
+    if(!m)return;m.classList.remove('show');m.style.display='none';
+    if(!document.querySelector('.tax-modal.show,.export-modal.show,.detail-modal.show,#modalEditExpPajak.show')){
+      document.body.classList.remove('modal-open');document.body.style.overflow='';
+    }
+  };
+
+  rows.forEach(row=>{
+    row.style.cursor='pointer';
+    row.addEventListener('click',e=>{
+      if(e.target.closest('button,a,form,input,select,textarea,label'))return;
+      selectRow(row);
+    });
+  });
+
+  if(tableCount)tableCount.textContent=`Menampilkan ${rows.length} dari ${rows.length} data`;
+  shell.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.action==='reset-select')clearSelection()}));
+
+  const bulan=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  function updateFivePreview(val){
+    const el=document.getElementById('editFiveDuePreview');if(!el)return;
+    if(!val){el.textContent='-';return}
+    const d=new Date(val);if(isNaN(d)){el.textContent='-';return}
+    const five=new Date(d);five.setFullYear(five.getFullYear()+5);
+    el.textContent=`${five.getDate()} ${bulan[five.getMonth()]} ${five.getFullYear()}`;
+  }
+  document.getElementById('editAnnualDue')?.addEventListener('input',e=>updateFivePreview(e.target.value));
+
+  editBtn?.addEventListener('click',()=>{
+    if(!state.primary)return;
+    document.getElementById('editPajakVehicleName').textContent=state.vehicleName||'-';
+    document.getElementById('editAnnualDue').value='';
+    document.getElementById('editPajakNote').value='';
+    updateFivePreview('');
+    openModal('#modalEditExpPajak');
+  });
+
+  const resetTaxPaymentModal=(modal)=>{
+    if(!modal) return;
+    const paidDateInput=modal.querySelector('[name="paid_date"]');
+    const amountInput=modal.querySelector('[name="amount"]');
+    if(paidDateInput) paidDateInput.value='';
+    if(amountInput) amountInput.value='';
+  };
+
+  document.querySelectorAll('.btn-open-tax-modal').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const row=btn.closest('.js-select-row');if(row)selectRow(row);
+    const canPay=(btn.dataset.canPay||'0')==='1';
+    if(!canPay){
+      showToast('Gabisa bayar sebelum isi tanggal exp pajak.','warning');
+      return;
+    }
+    const modal=document.querySelector(btn.dataset.target);
+    resetTaxPaymentModal(modal);
+    openModal(btn.dataset.target);
+  }));
+
+  document.querySelectorAll('.js-open-export-modal').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const row=btn.closest('.js-select-row');if(row)selectRow(row);
+    openModal(btn.dataset.target);
+  }));
+
+  document.querySelectorAll('.btn-close-tax').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.closest('.tax-modal'))));
+  document.querySelectorAll('.btn-close-detail').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.closest('.detail-modal'))));
+  document.querySelectorAll('.btn-close-export').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.closest('.export-modal'))));
+  document.querySelectorAll('.btn-close-edit-pajak').forEach(btn=>btn.addEventListener('click',()=>closeModal(document.getElementById('modalEditExpPajak'))));
+  // Semua modal tidak ditutup dari klik area luar; hanya tombol X/Tutup/Close.
+  // modalEditExpPajak tidak bisa ditutup klik di luar — hanya tombol Batal/X
+  // Escape tidak menutup modal supaya user hanya bisa keluar lewat tombol X/Tutup/Close.
+
+  document.getElementById('btnSaveEditPajak')?.addEventListener('click',()=>{
+    if(!state.primary)return;
+    const annualDue=document.getElementById('editAnnualDue').value;
+    const note=document.getElementById('editPajakNote').value;
+    fetch('/api/pajak/update-exp-note',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({vehicle_id:state.primary,record_id:state.recordId,annual_due:annualDue,note:note})
+    }).then(r=>r.json()).then(d=>{
+      if(d.success){ showToast('Berhasil disimpan!','success'); setTimeout(()=>location.reload(),1200); }
+      else showToast('Gagal menyimpan: '+(d.error||'Unknown error'),'danger');
+    }).catch(e=>showToast('Error: '+e.message,'danger'));
+  });
+
+  document.getElementById('btnClearEditPajak')?.addEventListener('click',()=>{
+    if(!window.confirm('Kosongkan exp pajak 5 tahunan dan catatan kendaraan ini?'))return;
+    if(!state.primary)return;
+    fetch('/api/pajak/update-exp-note',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({vehicle_id:state.primary,record_id:state.recordId,annual_due:'',note:''})
+    }).then(r=>r.json()).then(d=>{
+      if(d.success){ showToast('Data berhasil dikosongkan.','success'); setTimeout(()=>location.reload(),1200); }
+      else showToast('Gagal mengosongkan: '+(d.error||'Unknown error'),'danger');
+    }).catch(e=>showToast('Error: '+e.message,'danger'));
+  });
+
+  syncAll();
+})();
+
+function loadTaxHistory(vehicleId){
+  if(!vehicleId) return;
+  const historyContainer=document.querySelector(`[data-tax-history-list="${vehicleId}"]`);
+  if(!historyContainer || historyContainer.dataset.loaded==='1' || historyContainer.dataset.loading==='1') return;
+
+  historyContainer.dataset.loading='1';
+  fetch(`/api/pajak/history/${vehicleId}`)
+    .then(r=>r.json())
+    .then(data=>{
+      const items=Array.isArray(data.history)?data.history:[];
+      if(items.length>0){
+        historyContainer.innerHTML=items.map(h=>`
+          <div class="history-item">
+            <div class="hist-date">${h.date||'-'}</div>
+            <div class="hist-text">${h.text||'-'}</div>
+          </div>
+        `).join('');
+      }else{
+        historyContainer.innerHTML='<p style="color:rgba(255,255,255,.6);font-size:.8rem">Belum ada history</p>';
+      }
+      historyContainer.dataset.loaded='1';
+    })
+    .catch(()=>{
+      historyContainer.innerHTML='<p style="color:rgba(255,255,255,.6);font-size:.8rem">Gagal memuat history</p>';
+    })
+    .finally(()=>{
+      historyContainer.dataset.loading='0';
+    });
+}
+
+document.querySelectorAll('.detail-modal').forEach(modal=>{
+  const fromInput=modal.querySelector('.js-export-date-from');
+  const toInput=modal.querySelector('.js-export-date-to');
+  if(fromInput) fromInput.value='';
+  if(toInput) toInput.value='';
+});
+
+document.querySelectorAll('.js-export-pajak-excel').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const modal=btn.closest('.export-modal,.detail-modal');
+    if(!modal) return;
+
+    const baseUrl=btn.dataset.exportUrl || `/api/pajak/export/${btn.dataset.vehicleId}`;
+    const vehicleName=btn.dataset.vehicleName || 'DATA_PAJAK';
+    const dateFrom=modal.querySelector('.js-export-date-from')?.value || '';
+    const dateTo=modal.querySelector('.js-export-date-to')?.value || '';
+    const exportType=modal.querySelector('.js-export-type')?.value || 'all';
+
+    if(dateFrom && dateTo && dateFrom>dateTo){
+      showToast('Tanggal awal tidak boleh lebih besar dari tanggal akhir.','warning');
+      return;
+    }
+
+    const originalHTML=btn.innerHTML;
+    const originalDisabled=btn.disabled;
+
+    btn.disabled=true;
+    btn.innerHTML=`
+      <span style="display:inline-flex;align-items:center;gap:8px">
+        <span class="spinner-border spinner-border-sm" style="width:14px;height:14px;border-width:2px"></span>
+        Menyiapkan Excel...
+      </span>
+    `;
+
+    try{
+      const url=new URL(baseUrl, window.location.origin);
+      if(dateFrom) url.searchParams.set('date_from', dateFrom);
+      if(dateTo) url.searchParams.set('date_to', dateTo);
+      if(exportType) url.searchParams.set('export_type', exportType);
+      url.searchParams.set('_', Date.now().toString());
+
+      const response=await fetch(url.toString(),{
+        method:'GET',
+        credentials:'same-origin',
+        cache:'no-store',
+        headers:{'X-Requested-With':'XMLHttpRequest'}
+      });
+
+      if(!response.ok){
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const contentType=(response.headers.get('content-type') || '').toLowerCase();
+      if(contentType.includes('text/html')){
+        throw new Error('Server mengirim halaman error, bukan file Excel.');
+      }
+      if(contentType.includes('application/json')){
+        const data=await response.json().catch(()=>null);
+        throw new Error((data && (data.message || data.error)) || 'Server mengirim JSON, bukan file Excel.');
+      }
+
+      const blob=await response.blob();
+      if(!blob || blob.size===0){
+        throw new Error('File Excel kosong dari server.');
+      }
+
+      let filename='';
+      const disposition=response.headers.get('content-disposition') || '';
+      const utfMatch=disposition.match(/filename\*=UTF-8''([^;]+)/i);
+      const plainMatch=disposition.match(/filename="?([^";]+)"?/i);
+      if(utfMatch) filename=decodeURIComponent(utfMatch[1]);
+      else if(plainMatch) filename=plainMatch[1];
+
+      if(!filename){
+        const cleanName=String(vehicleName)
+          .replace(/[^a-zA-Z0-9]/g,'_')
+          .replace(/_+/g,'_')
+          .replace(/^_|_$/g,'');
+        filename=`PAJAK_${cleanName || 'DATA'}_${new Date().toISOString().slice(0,10)}.xlsx`;
+      }
+
+      const blobUrl=window.URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=blobUrl;
+      a.download=filename;
+      a.style.display='none';
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(()=>{
+        window.URL.revokeObjectURL(blobUrl);
+        a.remove();
+      },1000);
+
+      showToast('Excel berhasil diunduh.','success');
+
+      setTimeout(()=>{
+        const exportModal=btn.closest('.export-modal,.detail-modal');
+        if(exportModal){
+          exportModal.classList.remove('show');
+          exportModal.style.display='none';
+          if(!document.querySelector('.tax-modal.show,.export-modal.show,.detail-modal.show,#modalEditExpPajak.show')){
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow='';
+          }
+        }
+      },400);
+
+    }catch(err){
+      console.error('PAJAK EXPORT ERROR:', err);
+      showToast('Gagal export Excel. Silakan coba lagi.','danger');
+    }finally{
+      btn.disabled=originalDisabled;
+      btn.innerHTML=originalHTML;
+    }
+  });
+});
+
+(()=>{
+  const btn=document.getElementById('detailDropdownBtn'),list=document.getElementById('detailDropdownList'),
+        search=document.getElementById('detailSearch'),items=document.getElementById('detailItems');
+  if(!btn||!list||!search||!items)return;
+  const options=[...items.querySelectorAll('.detail-item-option')];
+  btn.addEventListener('click',e=>{e.stopPropagation();list.classList.toggle('open');if(list.classList.contains('open'))search.focus()});
+  document.addEventListener('click',e=>{if(!btn.closest('.detail-dropdown-wrap')?.contains(e.target))list.classList.remove('open')});
+  search.addEventListener('input',()=>{const q=search.value.toLowerCase();options.forEach(o=>{o.style.display=o.textContent.toLowerCase().includes(q)?'':'none'})});
+  options.forEach(o=>o.addEventListener('click',e=>{
+    if(o.dataset.target) e.preventDefault();
+    list.classList.remove('open');
+    const m=document.querySelector(o.dataset.target);
+    if(m){
+      m.classList.add('show');
+      m.style.display='block';
+      document.body.classList.add('modal-open');
+      document.body.style.overflow='hidden';
+      const historyBox=m.querySelector('[data-tax-history-list]');
+      if(historyBox) loadTaxHistory(historyBox.dataset.taxHistoryList);
+    }
+  }));
+})();
+
+(()=>{
+  const wrap=document.getElementById('ptSelectWrap');if(!wrap)return;
+  const btn=document.getElementById('ptBtn'),drop=document.getElementById('ptDrop'),
+        search=document.getElementById('ptSearch'),list=document.getElementById('ptList'),
+        hidden=document.getElementById('ptHidden'),label=document.getElementById('ptLabel');
+  const items=[...list.querySelectorAll('.cso')];
+  items.forEach(i=>{if(i.dataset.val===hidden.value)i.classList.add('selected')});
+  btn.addEventListener('click',e=>{e.stopPropagation();drop.classList.toggle('open');if(drop.classList.contains('open'))search.focus()});
+  document.addEventListener('click',e=>{if(!wrap.contains(e.target))drop.classList.remove('open')});
+  search.addEventListener('input',()=>{const q=search.value.toLowerCase();items.forEach(i=>{i.style.display=i.textContent.toLowerCase().includes(q)?'':'none'})});
+  items.forEach(i=>i.addEventListener('click',()=>{
+    hidden.value=i.dataset.val;label.textContent=i.textContent;
+    items.forEach(x=>x.classList.remove('selected'));i.classList.add('selected');drop.classList.remove('open');
+  }));
+})();
+
+  // ===== AJAX Bayar Pajak (FIXED) =====
+  document.addEventListener('click', async (e) => {
+    // Cegah penutupan modal jika klik di area backdrop (modal-dark)
+    if (e.target.classList.contains('modal-dark')) {
+      return;
+    }
+
+    const btn = e.target.closest('.js-bayar-pajak');
+    if (!btn) return;
+
+    const form = btn.closest('.tax-pay-form');
+    if (!form) return;
+
+    const paidDate = form.querySelector('[name="paid_date"]')?.value;
+    const amount = form.querySelector('[name="amount"]')?.value;
+    const dueDate = form.dataset.dueDate || '';
+
+    if (!dueDate) {
+      showToast('Gabisa bayar sebelum isi tanggal exp pajak.', 'warning');
+      return;
+    }
+
+    if (!paidDate) {
+      showToast('Isi tanggal bayar dulu.', 'danger');
+      return;
+    }
+    if (!amount || parseFloat(amount) <= 0) {
+      showToast('Isi nominal bayar yang valid dulu.', 'danger');
+      return;
+    }
+
+    const modal = form.closest('.tax-modal');
+
+    // Loading state
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Memproses...';
+    showToast('Memproses pembayaran...', 'warning');
+
+    try {
+      const fd = new FormData();
+      fd.append('vehicle_id', form.dataset.vehicleId || '');
+      fd.append('record_id', form.dataset.recordId || '');
+      fd.append('kind', form.dataset.kind || '');
+      fd.append('due_date', form.dataset.dueDate || '');
+      fd.append('paid_date', paidDate);
+      fd.append('amount', amount);
+
+      // Tambahkan plat untuk pajak 5 tahunan
+      if (form.dataset.kind === 'five') {
+        const plateBefore = form.querySelector('[name="plate_before"]')?.value || '';
+        const plateAfter = form.querySelector('[name="plate_after"]')?.value || '';
+        fd.append('plate_before', plateBefore);
+        fd.append('plate_after', plateAfter);
+      }
+
+      console.log('[BAYAR] Sending:', {vehicle_id: form.dataset.vehicleId, kind: form.dataset.kind, due_date: form.dataset.dueDate, paid_date: paidDate, amount: amount});
+
+      const res = await fetch('/api/pajak/claim', {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+
+      console.log('[BAYAR] HTTP Status:', res.status);
+
+      let data;
+      try {
+        data = await res.json();
+        console.log('[BAYAR] Response:', data);
+      } catch(jsonErr) {
+        console.error('[BAYAR] Response bukan JSON, status:', res.status);
+        showToast('Server error (HTTP ' + res.status + '). Lihat console F12.', 'danger');
+        btn.disabled = false;
+        btn.textContent = originalText;
+        return;
+      }
+
+      if (res.ok && data.success) {
+        if (modal) {
+          modal.classList.remove('show');
+          modal.style.display = 'none';
+        }
+        showToast(data.message || 'Pembayaran berhasil dicatat!', 'success');
+        setTimeout(() => location.reload(), 1400);
+      } else {
+        const msg = data.error || data.message || `Gagal (Status: ${res.status})`;
+        showToast(msg, 'danger');
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    } catch (e) {
+      console.error("Fetch error:", e);
+      showToast('Gagal koneksi: ' + e.message, 'danger');
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
+</script>
+
+
+<script>
+window.addEventListener('load',function(){
+  var el=document.querySelector('.hl-alert-row');
+  if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+});
+</script>
+
+<script>
+(function(){
+  const wrap=document.getElementById('statusSelectWrap'); if(!wrap || wrap.dataset.ready==='1') return; wrap.dataset.ready='1';
+  const btn=document.getElementById('statusBtn'), drop=document.getElementById('statusDrop'), hidden=document.getElementById('statusHidden'), label=document.getElementById('statusLabel');
+  if(!btn||!drop||!hidden||!label) return;
+  btn.addEventListener('click',function(e){e.stopPropagation();drop.classList.toggle('open')});
+  drop.querySelectorAll('.cso').forEach(function(opt){
+    if(opt.dataset.val===hidden.value) opt.classList.add('selected');
+    opt.addEventListener('click',function(){hidden.value=this.dataset.val||'';label.textContent=this.textContent.trim();drop.querySelectorAll('.cso').forEach(x=>x.classList.remove('selected'));this.classList.add('selected');drop.classList.remove('open');});
+  });
+  document.addEventListener('click',function(e){if(!wrap.contains(e.target))drop.classList.remove('open')});
+})();
+</script>
+
+{% endblock %}

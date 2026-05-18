@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  :root{
+    --bg1:#0b2343;
+    --bg2:#133a69;
+    --panel:#12355f;
+    --panel2:#0f2d54;
+    --blue:#1e5aa8;
+    --line:rgba(255,255,255,.12);
+    --line-soft:rgba(255,255,255,.07);
+    --text:#fff;
+    --soft:rgba(255,255,255,.82);
+    --muted:rgba(255,255,255,.60);
+    --warn:#f4b326;
+    --warn2:#ffd15f;
+    --danger:#ff6b6b;
+    --safe:#8fd19e;
+    --soon:#ffd166;
+    --empty:#c7ced9;
+  }
+
+  html,body{height:100%;background:var(--bg1);overflow:hidden;}
+  body{background:linear-gradient(180deg,var(--bg1),var(--bg2));}
+  .content-wrap{min-height:unset!important;height:calc(100vh - 88px);overflow:hidden;display:flex;flex-direction:column;}
+
+  .vdp{
+    color:#fff;
+    padding:10px 18px;
+    height:calc(100vh - 88px);
+    min-height:0;
+    overflow:auto;
+    background:transparent;
+    font-family:'Poppins',Arial,Helvetica,sans-serif;
+    font-size:.86rem;
+  }
+  .vdp-shell{width:100%;max-width:none;margin:0;}
+
+  .vdp-topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+  .vdp-title{margin:0;color:#fff;font-weight:900;font-size:1.3rem;line-height:1.1;}
+  .vdp-title span{font-size:.95rem!important;color:var(--muted)!important;}
+  .vdp-sub{margin:.28rem 0 0;color:var(--muted);font-size:.82rem;line-height:1.3;}
+
+  .vdp-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    height:34px;padding:0 12px;border-radius:4px;
+    border:1px solid var(--line);background:rgba(255,255,255,.045);
+    color:#fff;text-decoration:none;font-size:.79rem;font-weight:800;
+  }
+  .vdp-btn:hover{background:rgba(255,255,255,.09);color:var(--warn2);border-color:rgba(255,255,255,.20);text-decoration:none;}
+
+  .vdp-panel,.vdp-card{
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:4px;
+    box-shadow:none;
+  }
+  .vdp-panel{padding:10px;margin-bottom:10px;}
+  .vdp-panel-title{margin:0 0 10px;color:#fff;font-size:1.02rem;font-weight:900;line-height:1.1;text-transform:uppercase;}
+
+  .vdp-info-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));border:1px solid var(--line-soft);border-radius:4px;overflow:hidden;background:#0b2649;}
+  .vdp-info-cell{padding:8px 10px;border-right:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);}
+  .vdp-info-label{font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+  .vdp-info-val{font-size:.84rem;font-weight:800;color:#fff;word-break:break-word;}
+
+  .vdp-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+  .vdp-card{padding:10px;}
+  .vdp-card-label{font-size:.68rem;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;display:block;}
+  .vdp-card-val{font-size:.93rem;font-weight:900;line-height:1.35;margin-bottom:6px;color:#fff;}
+  .vdp-card-meta{color:rgba(255,255,255,.72);font-size:.78rem;line-height:1.5;}
+
+  .chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:.68rem;font-weight:900;border:1px solid transparent;white-space:nowrap;}
+  .chip-ok{background:rgba(143,209,158,.16);color:#d5ffe0;border-color:rgba(143,209,158,.35);}
+  .chip-warn{background:rgba(255,209,102,.18);color:#ffebb3;border-color:rgba(255,209,102,.35);}
+  .chip-bad{background:rgba(255,107,107,.18);color:#ffd2d2;border-color:rgba(255,107,107,.35);}
+  .chip-off{background:rgba(199,206,217,.14);color:#eef3fb;border-color:rgba(199,206,217,.30);}
+
+  .vdp-tbl-wrap{border:1px solid var(--line-soft);border-radius:4px;overflow:hidden;background:#0b2649;}
+  .vdp-tbl-scroll{max-height:300px;overflow:auto;transform:translateZ(0);}
+  .vdp-tbl{width:100%;border-collapse:separate;border-spacing:0;font-family:'Poppins',Arial,Helvetica,sans-serif;}
+  .vdp-tbl th,.vdp-tbl td{box-shadow:inset -1px 0 0 rgba(255,255,255,.10);}
+  .vdp-tbl th:last-child,.vdp-tbl td:last-child{box-shadow:none;}
+  .vdp-tbl th{position:sticky;top:0;z-index:2;background:var(--blue);color:var(--warn2);padding:8px 10px;font-size:11px;font-weight:800;line-height:1.2;border-bottom:2px solid rgba(255,209,95,.30);text-align:left;white-space:nowrap;letter-spacing:.03em;text-transform:uppercase;}
+  .vdp-tbl tbody tr:nth-child(odd){background:#0e2c55;}
+  .vdp-tbl tbody tr:nth-child(even){background:#0c274b;}
+  .vdp-tbl tbody tr:hover{background:#143761;}
+  .vdp-tbl td{color:rgba(255,255,255,.92);padding:8px 10px;font-size:12.5px;font-weight:500;line-height:1.3;vertical-align:top;white-space:normal;word-break:break-word;overflow-wrap:anywhere;border-bottom:0;}
+  .vdp-tbl .row-five{background:rgba(255,209,95,.05);}
+  .vdp-tbl .row-projected td{opacity:.82;font-style:italic;}
+
+  .vdp-hist{max-height:300px;overflow:auto;display:grid;gap:8px;}
+  .vdp-hcard{border:1px solid var(--line-soft);background:rgba(255,255,255,.04);border-radius:4px;padding:10px;}
+  .vdp-hhead{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:5px;}
+  .vdp-htitle{font-weight:900;font-size:.86rem;color:#fff;}
+  .vdp-htime,.vdp-hnote{color:var(--muted);font-size:.78rem;}
+  .vdp-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .vdp-empty{padding:15px;color:rgba(255,255,255,.7);font-size:.82rem;text-align:center;}
+
+  *{animation:none!important;transition:none!important;}
+  @media (max-width:900px){.vdp-strip{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:820px){.vdp-grid2{grid-template-columns:1fr;}}
+  @media (max-width:560px){.vdp{padding:12px;}.vdp-topbar{flex-direction:column;align-items:flex-start;}.vdp-strip{grid-template-columns:1fr;}.vdp-title{font-size:1.2rem;}}
+</style>
+
+{# ── Alias ── #}
+{% set plate_number = vehicle.plate_new or vehicle.plate_old or '-' %}
+{% set vehicle_name = vehicle.active_name or vehicle.new_asset_name or vehicle.name_as_asset_pt or ((vehicle.merk or '-') ~ ' ' ~ (vehicle.type or '')) %}
+
+{% set ns = namespace(active_loan=None, next_service=None, next_kir=None) %}
+{% for row in loan_rows %}
+  {% if ns.active_loan is none and not row.date_return_actual and (row.status|string|lower) != 'selesai' %}
+    {% set ns.active_loan = row %}
+  {% endif %}
+{% endfor %}
+{% for row in service_rows %}
+  {% if ns.next_service is none and service_due_date(row) %}
+    {% set ns.next_service = row %}
+  {% endif %}
+{% endfor %}
+{% for row in kir_rows %}
+  {% if ns.next_kir is none and row.due_date %}
+    {% set ns.next_kir = row %}
+  {% endif %}
+{% endfor %}
+
+{# Pajak — gunakan annual_due_info dari route (sudah pakai _annual_tax_cycle) #}
+{% set a_info = annual_due_info %}
+{% set a_status = a_info.display_status if a_info else 'empty' %}
+{% set f_paid = five_active and five_active.paid_date and five_active.amount and five_active.amount|float > 0 %}
+{% set f_status = 'paid' if f_paid else ('safe' if five_active and five_active.due_date and five_active.due_date >= today else ('bad' if five_active else 'empty')) %}
+
+<div class="vdp">
+  <div class="vdp-shell">
+
+    {# ── Header ── #}
+    <div class="vdp-topbar">
+      <div>
+        <h1 class="vdp-title">{{ vehicle_name }} <span style="color:var(--muted);font-weight:500;font-size:1.3rem">({{ plate_number }})</span></h1>
+        <div class="vdp-sub">Resume kendaraan · status aktif · jadwal terdekat · riwayat lengkap</div>
+      </div>
+      <a href="{{ back_url or request.referrer or url_for('main.kendaraan') }}" class="vdp-btn">← Kembali</a>
+    </div>
+
+    {# ── Informasi Utama ── #}
+    <div class="vdp-panel">
+      <h2 class="vdp-panel-title">Informasi Utama</h2>
+      <div class="vdp-info-row">
+        <div class="vdp-info-cell">
+          <div class="vdp-info-label">PT</div>
+          <div class="vdp-info-val">{{ vehicle.pt or '-' }}</div>
+        </div>
+        <div class="vdp-info-cell">
+          <div class="vdp-info-label">PT Pemilik Aset</div>
+          <div class="vdp-info-val">{{ vehicle.asset_owner_company.name if vehicle.asset_owner_company else '-' }}</div>
+        </div>
+        <div class="vdp-info-cell">
+          <div class="vdp-info-label">No Polisi</div>
+          <div class="vdp-info-val">{{ plate_number }}</div>
+        </div>
+        <div class="vdp-info-cell">
+          <div class="vdp-info-label">Merk / Type</div>
+          <div class="vdp-info-val">{{ vehicle.merk or '-' }} {{ vehicle.type or '' }}</div>
+        </div>
+        <div class="vdp-info-cell">
+          <div class="vdp-info-label">User Aktif</div>
+          <div class="vdp-info-val">{{ vehicle.user_new or vehicle.user_old or '-' }}</div>
+        </div>
+        <div class="vdp-info-cell">
+          <div class="vdp-info-label">Status</div>
+          <div class="vdp-info-val">{{ vehicle.status or '-' }}</div>
+        </div>
+        <div class="vdp-info-cell">
+          <div class="vdp-info-label">Lokasi</div>
+          <div class="vdp-info-val">{{ vehicle.lokasi or '-' }}</div>
+        </div>
+        <div class="vdp-info-cell">
+          <div class="vdp-info-label">Kondisi</div>
+          <div class="vdp-info-val">{{ vehicle.kondisi_terkini or '-' }}</div>
+        </div>
+        {% for col in custom_columns or [] %}
+          <div class="vdp-info-cell">
+            <div class="vdp-info-label">{{ col.column_label or col['column_label'] }}</div>
+            {% set ckey = col.column_key or col['column_key'] %}
+            <div class="vdp-info-val">{{ custom_values.get(ckey) or '-' }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# ── Summary Strip ── #}
+    <div class="vdp-strip">
+
+      <div class="vdp-card">
+        <span class="vdp-card-label">Peminjaman Aktif</span>
+        <div class="vdp-card-val">{{ ns.active_loan.borrower_name if ns.active_loan else 'Tidak ada' }}</div>
+        <div class="vdp-card-meta">
+          {% if ns.active_loan %}
+            Pinjam: {{ fmt_tgl(ns.active_loan.date_out) or '-' }}<br>
+            Kembali: {{ fmt_tgl(ns.active_loan.date_return_plan) or '-' }}<br>
+            {% set loan_overdue = ns.active_loan.date_return_plan and ns.active_loan.date_return_plan < today %}
+            <span class="chip {{ 'chip-bad' if loan_overdue else 'chip-warn' }}">{{ ns.active_loan.status or 'Dipinjam' }}</span>
+          {% else %}
+            Unit sedang tidak dipinjam.
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="vdp-card">
+        <span class="vdp-card-label">Servis Terdekat</span>
+        <div class="vdp-card-val">{{ fmt_tgl(service_due_date(ns.next_service)) if ns.next_service and service_due_date(ns.next_service) else '-' }}</div>
+        <div class="vdp-card-meta">
+          {% if ns.next_service %}
+            Terakhir: {{ fmt_tgl(ns.next_service.service_date) or '-' }}<br>
+            Jenis: {{ ns.next_service.service_type or ns.next_service.jenis_servis or '-' }}
+          {% else %}
+            Belum ada data servis.
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="vdp-card">
+        <span class="vdp-card-label">KIR Terdekat</span>
+        <div class="vdp-card-val">{{ fmt_tgl(ns.next_kir.due_date) if ns.next_kir else '-' }}</div>
+        <div class="vdp-card-meta">
+          {% if ns.next_kir %}
+            Tes: {{ fmt_tgl(ns.next_kir.done_date) or '-' }}<br>
+            Hasil: {{ ns.next_kir.result or '-' }}
+          {% else %}
+            Belum ada data KIR.
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="vdp-card">
+        <span class="vdp-card-label">Pajak Aktif / Mendatang</span>
+        <div class="vdp-card-val" style="font-size:.92rem">
+          {# Pajak Tahunan dari annual_due_info (projected via _annual_tax_cycle) #}
+          {% if a_info and a_info.display_due_date %}
+            <span style="color:var(--muted);font-size:.72rem;font-weight:600;text-transform:uppercase">Tahunan</span><br>
+            {{ fmt_tgl(a_info.display_due_date) }}
+            {% if a_info.tax_year %}<span style="color:var(--muted);font-size:.8rem"> ({{ a_info.tax_year }})</span>{% endif %}
+          {% else %}
+            <span style="color:var(--muted)">Tahunan: -</span>
+          {% endif %}
+          <br>
+          {# Pajak 5 Tahunan #}
+          {% if five_active and five_active.due_date %}
+            <span style="color:var(--muted);font-size:.72rem;font-weight:600;text-transform:uppercase">5 Tahunan</span><br>
+            {{ fmt_tgl(five_active.due_date) }}
+          {% else %}
+            <span style="color:var(--muted)">5 Tahunan: -</span>
+          {% endif %}
+        </div>
+        <div class="vdp-card-meta">
+          {% if a_info and a_info.display_due_date %}
+            <span class="chip {{ 'chip-ok' if a_status == 'paid' else 'chip-warn' if a_status == 'safe' else 'chip-bad' if a_status in ('overdue','soon') else 'chip-off' }}">
+              Tahunan {{ 'Lunas' if a_status == 'paid' else 'Belum Lunas' }}
+            </span>
+          {% else %}
+            <span class="chip chip-off">Tahunan belum ada data</span>
+          {% endif %}
+          <br>
+          {% if five_active %}
+            <span class="chip {{ 'chip-ok' if f_paid else 'chip-warn' if f_status == 'safe' else 'chip-bad' }}">
+              5 Tahunan {{ 'Lunas' if f_paid else 'Belum Lunas' }}
+            </span>
+          {% else %}
+            <span class="chip chip-off">5 Tahunan belum ada data</span>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>{# end strip #}
+
+    {# ── Riwayat Pajak — full width, 1 tabel gabungan ── #}
+    <div class="vdp-panel">
+      <h2 class="vdp-panel-title">Riwayat Pajak</h2>
+      {% set has_tax = annual_rows or five_rows or (a_info and a_info.display_due_date and not annual_rows) %}
+      {% if has_tax %}
+        <div class="vdp-tbl-wrap">
+          <div class="vdp-tbl-scroll">
+            <table class="vdp-tbl" style="min-width:700px">
+              <thead>
+                <tr>
+                  <th>Jenis</th>
+                  <th>Tahun</th>
+                  <th>Jatuh Tempo</th>
+                  <th>Tgl Bayar</th>
+                  <th>Biaya</th>
+                  <th>Status</th>
+                  <th>No Pol Lama → Baru</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {# Baris projected: muncul kalau annual_tax_payments masih kosong
+                   (belum ada pembayaran), tapi five_year_tax_payments sudah ada #}
+                {% if a_info and a_info.display_due_date and not annual_rows %}
+                  <tr class="row-projected">
+                    <td>Tahunan <span style="font-size:.72rem;color:var(--muted)">(Projected)</span></td>
+                    <td>{{ a_info.tax_year or '-' }}</td>
+                    <td>{{ fmt_tgl(a_info.display_due_date) or '-' }}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>
+                      <span class="chip {{ 'chip-ok' if a_status == 'paid' else 'chip-warn' if a_status == 'safe' else 'chip-bad' }}">
+                        {{ 'Lunas' if a_status == 'paid' else 'Belum Lunas' }}
+                      </span>
+                    </td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                {% endif %}
+                {% for r in annual_rows %}
+                  {% set st = 'chip-ok' if r.paid_date else ('chip-warn' if r.due_date and r.due_date >= today else 'chip-bad') %}
+                  <tr class="row-annual">
+                    <td>Tahunan</td>
+                    <td>{{ r.tax_year or (r.due_date.year if r.due_date else '-') }}</td>
+                    <td>{{ fmt_tgl(r.due_date) or '-' }}</td>
+                    <td>{{ fmt_tgl(r.paid_date) or '-' }}</td>
+                    <td>{{ rupiah(r.amount) }}</td>
+                    <td><span class="chip {{ st }}">{{ 'Lunas' if r.paid_date else 'Belum Lunas' }}</span></td>
+                    <td>-</td>
+                    <td>{{ r.note or '-' }}</td>
+                  </tr>
+                {% endfor %}
+                {% for r in five_rows %}
+                  {% set st5 = 'chip-ok' if r.paid_date else ('chip-warn' if r.due_date and r.due_date >= today else 'chip-bad') %}
+                  <tr class="row-five">
+                    <td>5 Tahunan</td>
+                    <td>{{ r.due_date.year if r.due_date else '-' }}</td>
+                    <td>{{ fmt_tgl(r.due_date) or '-' }}</td>
+                    <td>{{ fmt_tgl(r.paid_date) or '-' }}</td>
+                    <td>{{ rupiah(r.amount) }}</td>
+                    <td><span class="chip {{ st5 }}">{{ 'Lunas' if r.paid_date else 'Belum Lunas' }}</span></td>
+                    <td>
+                      {% if r.plate_before or r.plate_after %}
+                        {{ r.plate_before or '-' }} → {{ r.plate_after or '(belum diisi)' }}
+                      {% else %}-{% endif %}
+                    </td>
+                    <td>{{ r.note or '-' }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% else %}
+        <div class="vdp-empty">Belum ada data pajak.</div>
+      {% endif %}
+    </div>
+
+    {# ── Riwayat Servis ── full width #}
+    <div class="vdp-panel">
+      <h2 class="vdp-panel-title">Riwayat Servis</h2>
+      {% if service_rows %}
+        <div class="vdp-tbl-wrap">
+          <div class="vdp-tbl-scroll">
+            <table class="vdp-tbl" style="min-width:560px">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Jenis</th>
+                  <th>Bengkel / Vendor</th>
+                  <th>Biaya</th>
+                  <th>Servis Berikutnya</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in service_rows %}
+                  <tr>
+                    <td>{{ fmt_tgl(r.service_date) or '-' }}</td>
+                    <td>{{ r.service_type or r.jenis_servis or '-' }}</td>
+                    <td>{{ r.vendor or r.bengkel or '-' }}</td>
+                    <td>{{ rupiah(r.cost) }}</td>
+                    <td>{{ fmt_tgl(service_due_date(r)) or '-' }}</td>
+                    <td>{{ r.note or '-' }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% else %}
+        <div class="vdp-empty">Belum ada data servis.</div>
+      {% endif %}
+    </div>
+
+    {# ── Riwayat KIR ── full width #}
+    <div class="vdp-panel">
+      <h2 class="vdp-panel-title">Riwayat KIR</h2>
+      {% if kir_rows %}
+        <div class="vdp-tbl-wrap">
+          <div class="vdp-tbl-scroll">
+            <table class="vdp-tbl" style="min-width:480px">
+              <thead>
+                <tr>
+                  <th>Tanggal Tes</th>
+                  <th>Jatuh Tempo</th>
+                  <th>Hasil</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in kir_rows %}
+                  <tr>
+                    <td>{{ fmt_tgl(r.done_date) or '-' }}</td>
+                    <td>{{ fmt_tgl(r.due_date) or '-' }}</td>
+                    <td>{{ r.result or '-' }}</td>
+                    <td>{{ r.note or '-' }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% else %}
+        <div class="vdp-empty">Belum ada data KIR.</div>
+      {% endif %}
+    </div>
+
+    {# ── Riwayat Peminjaman ── full width #}
+    <div class="vdp-panel">
+      <h2 class="vdp-panel-title">Riwayat Peminjaman</h2>
+      {% if loan_rows %}
+        <div class="vdp-tbl-wrap">
+          <div class="vdp-tbl-scroll">
+            <table class="vdp-tbl" style="min-width:560px">
+              <thead>
+                <tr>
+                  <th>Peminjam</th>
+                  <th>Tgl Pinjam</th>
+                  <th>Rencana Kembali</th>
+                  <th>Aktual Kembali</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in loan_rows %}
+                  {% set loan_done = r.date_return_actual or (r.status|string|lower) == 'selesai' %}
+                  {% set loan_overdue = (not loan_done) and r.date_return_plan and r.date_return_plan < today %}
+                  <tr>
+                    <td>{{ r.borrower_name or '-' }}</td>
+                    <td>{{ fmt_tgl(r.date_out) or '-' }}</td>
+                    <td>{{ fmt_tgl(r.date_return_plan) or '-' }}</td>
+                    <td>{{ fmt_tgl(r.date_return_actual) or '-' }}</td>
+                    <td>
+                      <span class="chip {{ 'chip-ok' if loan_done else 'chip-bad' if loan_overdue else 'chip-warn' }}">
+                        {{ r.status or ('Selesai' if loan_done else 'Dipinjam') }}
+                      </span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% else %}
+        <div class="vdp-empty">Belum ada data peminjaman.</div>
+      {% endif %}
+    </div>
+
+    {# ── History 2-kolom (perubahan kendaraan + perubahan user) ── #}
+    <div class="vdp-grid2">
+      <div class="vdp-panel" style="margin-bottom:0">
+        <h2 class="vdp-panel-title">Riwayat Perubahan Kendaraan</h2>
+        {% if vehicle_changes %}
+          <div class="vdp-hist">
+            {% for item in vehicle_changes %}
+              <div class="vdp-hcard">
+                <div class="vdp-hhead">
+                  <div class="vdp-htitle">{{ item.field_label or item.field_name or 'Perubahan data' }}</div>
+                  <div class="vdp-htime">{{ fmt_tgl_jam(item.changed_at) or '-' }}</div>
+                </div>
+                <div style="font-size:.85rem"><strong>Sebelum:</strong> {{ item.old_value or '-' }}</div>
+                <div style="font-size:.85rem"><strong>Sesudah:</strong> {{ item.new_value or '-' }}</div>
+                <div class="vdp-hnote">{{ item.changed_by or 'system' }}{% if item.note %} · {{ item.note }}{% endif %}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="vdp-empty">Belum ada riwayat perubahan kendaraan.</div>
+        {% endif %}
+      </div>
+
+      <div class="vdp-panel" style="margin-bottom:0">
+        <h2 class="vdp-panel-title">Riwayat Perubahan User</h2>
+        {% if user_rows %}
+          <div class="vdp-hist">
+            {% for item in user_rows %}
+              <div class="vdp-hcard">
+                <div class="vdp-hhead">
+                  <div class="vdp-htitle">{{ item.user_lama or '-' }} → {{ item.user_baru or '-' }}</div>
+                  <div class="vdp-htime">{{ fmt_tgl_jam(item.change_date or item.changed_at) or '-' }}</div>
+                </div>
+                <div class="vdp-hnote">{{ item.note or 'Tanpa catatan tambahan' }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="vdp-empty">Belum ada riwayat perubahan user.</div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

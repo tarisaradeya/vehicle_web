@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root{
+  --bg1:#0b2343;
+  --bg2:#133a69;
+  --panel:#12355f;
+  --panel2:#12355f;
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.12);
+  --soft:rgba(255,255,255,.82);
+  --muted:rgba(255,255,255,.62);
+  --warn:#f4b326;
+  --warn2:#ffd15f;
+  --danger:#ff6b6b;
+  --safe:#8fd19e;
+  --info:#9fcfff;
+  --shadow:none;
+}
+html,body{
+  height:100%;
+  background:linear-gradient(180deg,var(--bg1) 0%,#12345c 52%,var(--bg2) 100%)!important;
+  background-attachment:fixed!important;
+}
+.alert{display:none!important;}
+
+html,body{margin:0;padding:0;overflow:hidden}
+.auth-container{height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:8vh 20px 20px;box-sizing:border-box}
+.auth-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:4px;box-shadow:none;overflow:hidden}
+.auth-header{padding:24px 24px 0;text-align:center}.auth-body{padding:24px}.auth-title{margin:0 0 6px;font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:.01em}.auth-subtitle{margin:0 0 22px;font-size:.82rem;color:var(--muted);line-height:1.5}.form-group{margin-bottom:14px}.form-label{display:block;margin-bottom:6px;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.62);letter-spacing:0;text-transform:none}.form-control{width:100%;height:38px;padding:0 12px;border:1px solid rgba(255,255,255,.12);border-radius:4px;font-size:.86rem;background:#12355f;color:#fff;box-sizing:border-box}.form-control::placeholder{color:rgba(255,255,255,.32)}.form-control:focus{outline:none;border-color:var(--warn);background:#12355f;box-shadow:none}.btn-submit{width:100%;height:34px;padding:0 14px;background:linear-gradient(180deg,var(--warn2),var(--warn));color:#132849;border:1px solid var(--warn);border-radius:4px;font-weight:900;font-size:.82rem;cursor:pointer;margin-top:8px}.btn-submit:hover{background:#efb021;border-color:#efb021;transform:none;box-shadow:none}.auth-footer{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:.76rem;color:var(--muted);line-height:1.4}.auth-footer strong{color:var(--warn2);font-weight:800}@media(max-height:550px){.auth-container{padding-top:20px;overflow-y:auto}body{overflow:auto}}
+
+</style>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2 class="auth-title">Otentikasi Sistem</h2>
+      <p class="auth-subtitle">Silakan masukkan kredensial Anda untuk mengakses panel manajemen.</p>
+    </div>
+
+    <div class="auth-body">
+      <form method="post" action="{{ url_for('main.login_post') }}">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input name="username" type="text" class="form-control" placeholder="ID Pengguna" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input name="password" type="password" class="form-control" placeholder="Kata Sandi" required>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          Akses Dashboard
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <strong>Bantuan:</strong> Hubungi Administrator jika Anda mengalami kendala akses atau lupa kata sandi.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

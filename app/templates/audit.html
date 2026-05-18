@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root{
+  --bg1:#0b2343;
+  --bg2:#133a69;
+  --panel:#12355f;
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.12);
+  --soft:rgba(255,255,255,.82);
+  --muted:rgba(255,255,255,.62);
+  --warn:#f4b326;
+  --warn2:#ffd15f;
+  --danger:#ff6b6b;
+  --safe:#8fd19e;
+  --info:#9fcfff;
+  --shadow:none;
+}
+html,body{
+  height:100%;overflow:hidden;
+  background:linear-gradient(180deg,var(--bg1) 0%,#12345c 52%,var(--bg2) 100%);
+}
+.alert{display:none!important;}
+body{overflow:hidden;}
+.content-wrap{min-height:unset!important;height:calc(100vh - 88px);overflow:hidden;display:flex;flex-direction:column}
+.wrap{width:100%;padding:10px 18px;flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.title{margin:0;color:#fff;font-weight:900;font-size:1.3rem;line-height:1.08;letter-spacing:.01em;text-transform:uppercase}
+.btn-home{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;cursor:pointer;user-select:none;border:1px solid rgba(255,255,255,.12);color:#fff;background:rgba(255,255,255,.04);height:32px;padding:0 12px;border-radius:4px;font-size:.79rem;font-weight:800}
+.btn-home:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.18)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;box-shadow:none;flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:8px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.panel-title{margin:0;color:#fff;font-size:1.02rem;font-weight:900;line-height:1.05;text-transform:uppercase;letter-spacing:0}
+.table-wrap{overflow:auto;transform:translateZ(0);border-radius:4px;border:1px solid rgba(255,255,255,.08);flex:1 1 0;min-height:0}
+.table-sg{width:100%;margin:0;border-collapse:separate;border-spacing:0;min-width:1100px;table-layout:fixed;font-family:'Poppins',Arial,Helvetica,sans-serif}
+.table-sg th,.table-sg td{box-shadow:inset -1px 0 0 rgba(255,255,255,.10)}
+.table-sg th:last-child,.table-sg td:last-child{box-shadow:none}
+.table-sg thead th{position:sticky;top:0;z-index:2;background:#1e5aa8;color:#ffd15f;padding:9px 10px;font-size:11px;font-weight:800;line-height:1.2;border-bottom:2px solid rgba(255,209,95,.25);text-align:left;white-space:nowrap;letter-spacing:.03em;text-transform:uppercase}
+.table-sg tbody tr:nth-child(odd){background:#0e2c55}
+.table-sg tbody tr:nth-child(even){background:#0b2649}
+.table-sg tbody tr:hover{background:#1a3f6e}
+.table-sg tbody td{color:rgba(255,255,255,.92);padding:9px 10px;font-size:12.5px;font-weight:500;line-height:1.3;vertical-align:middle;box-shadow:inset -1px 0 0 rgba(255,255,255,.10),inset 0 1px 0 rgba(255,255,255,.07);white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+.table-sg tbody tr:last-child td{box-shadow:inset -1px 0 0 rgba(255,255,255,.10)}
+.table-sg tbody td:last-child{box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+.actor-box{display:flex;flex-direction:column;gap:2px}
+.actor-name{font-weight:800;color:#fff;font-size:12.5px}
+.actor-sub{font-size:10.5px;color:rgba(255,255,255,.62);font-weight:700;text-transform:uppercase}
+.badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;text-transform:none;letter-spacing:0;border:1px solid transparent}
+.badge-create{background:rgba(255,209,95,.18);color:#ffe08b;border-color:rgba(255,209,95,.42)}
+.badge-update{background:rgba(159,207,255,.14);color:#cfe8ff;border-color:rgba(159,207,255,.30)}
+.badge-delete{background:rgba(255,107,107,.18);color:#ffd2d2;border-color:rgba(255,107,107,.35)}
+.badge-auth{background:rgba(143,209,158,.16);color:#d5ffe0;border-color:rgba(143,209,158,.35)}
+.badge-pay{background:rgba(255,209,95,.14);color:#ffd15f;border-color:rgba(255,209,95,.28)}
+.note-text{color:var(--soft);line-height:1.35;font-size:12.5px;font-weight:500}
+.time-text{font-family:'Poppins',Arial,Helvetica,sans-serif;font-variant-numeric:tabular-nums;color:#fff;font-size:12px;font-weight:600}
+.ip-text{color:var(--muted);font-size:11.5px;font-family:'Poppins',Arial,Helvetica,sans-serif}
+.entity-main{font-weight:700;color:#fff;font-size:12.5px}
+.entity-id{font-size:10px;color:var(--muted);margin-top:2px}
+/* progressive render */
+#auditTbody{opacity:0;transition:opacity .18s ease}
+#auditTbody.sg-ready{opacity:1}
+#auditTbody tr{content-visibility:auto;contain-intrinsic-size:0 44px}
+@media(max-width:768px){.wrap{padding:12px}.page-header,.panel-head{flex-direction:column;align-items:flex-start}.title{font-size:1.2rem}}
+</style>
+
+<div class="content-wrap">
+  <div class="wrap">
+    <div class="page-header">
+      <h1 class="title">Audit Trail Aktivitas</h1>
+      <a class="btn-home" href="{{ url_for('main.home') }}">← Home</a>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title"><i class="bi bi-list-ul"></i> Riwayat Aktivitas Terbaru</h2>
+        <div style="color:var(--muted);font-size:.75rem">Menampilkan {{ logs|length }} log terakhir</div>
+      </div>
+      <div class="table-wrap">
+        <table class="table-sg">
+          <thead>
+            <tr>
+              <th style="width:155px">Waktu</th>
+              <th style="width:190px">Aktor</th>
+              <th style="width:110px">Aksi</th>
+              <th style="width:145px">Entitas</th>
+              <th>Catatan Aktivitas</th>
+              <th style="width:115px">IP Address</th>
+            </tr>
+          </thead>
+          <tbody id="auditTbody">
+            {% for l in logs %}
+              {% set act = (l.action or '')|lower %}
+              {% if 'create' in act or 'upload' in act or 'finish' in act %}
+                {% set b_cls = 'badge-create' %}
+              {% elif 'pay' in act %}
+                {% set b_cls = 'badge-pay' %}
+              {% elif 'update' in act or 'edit' in act or 'reset' in act %}
+                {% set b_cls = 'badge-update' %}
+              {% elif 'delete' in act %}
+                {% set b_cls = 'badge-delete' %}
+              {% else %}
+                {% set b_cls = 'badge-auth' %}
+              {% endif %}
+              <tr>
+                <td><div class="time-text">{{ l.created_at.strftime("%d/%m/%Y %H:%M:%S") if l.created_at else "-" }}</div></td>
+                <td>
+                  <div class="actor-box">
+                    <div class="actor-name">{{ l.actor_name or "-" }}</div>
+                    <div class="actor-sub">
+                      {% if l.actor_username and l.actor_username != "-" and l.actor_username != l.actor_name %}
+                        @{{ l.actor_username }} ·
+                      {% endif %}
+                      {{ l.actor_role or "SYSTEM" }}
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge {{ b_cls }}">{{ l.action or "-" }}</span></td>
+                <td>
+                  <div class="entity-main">{{ l.entity_type or "-" }}</div>
+                  {% if l.entity_id and l.entity_id != 0 %}<div class="entity-id">ID: #{{ l.entity_id }}</div>{% endif %}
+                </td>
+                <td><div class="note-text">{{ l.note or "-" }}</div></td>
+                <td><div class="ip-text">{{ l.ip or "-" }}</div></td>
+              </tr>
+            {% endfor %}
+            {% if not logs %}
+              <tr>
+                <td colspan="6" style="text-align:center;padding:60px 0;color:var(--muted)">
+                  <i class="bi bi-journal-x" style="font-size:2.5rem;display:block;margin-bottom:12px;opacity:.3"></i>
+                  Belum ada rekaman aktivitas dalam database.
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const tbody = document.getElementById('auditTbody');
+  if(!tbody) return;
+  const reveal = () => tbody.classList.add('sg-ready');
+  typeof requestIdleCallback !== 'undefined'
+    ? requestIdleCallback(reveal, {timeout:400})
+    : setTimeout(reveal, 50);
+})();
+</script>
+{% endblock %}

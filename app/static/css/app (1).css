@@ -1,0 +1,108 @@
+:root{
+  --glass-bg: rgba(255,255,255,.90);
+  --glass-border: rgba(255,255,255,.35);
+}
+
+/* BACKGROUND UTAMA: pakai foto fleet + overlay corporate */
+.bg-vehicle{
+  min-height: 100vh;
+  background:
+    linear-gradient(120deg, rgba(7,12,22,.82), rgba(9,25,52,.78)),
+    url("/static/img/bg_fleet.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Glass card */
+.glass{
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+}
+
+/* HERO (HOME) */
+.hero{
+  position: relative;
+  border-radius: 22px;
+  min-height: 380px;
+  overflow: hidden;
+}
+.hero-bg{
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.75), rgba(0,0,0,.25)),
+    url("/static/img/hero_vehicle.jpg");
+  background-size: cover;
+  background-position: center;
+  filter: saturate(1.05) contrast(1.05);
+}
+.hero-content{ position: relative; z-index: 1; }
+
+/* HEADER PROFIL PT & KENDARAAN */
+.pt-hero, .vehicle-hero{
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.pt-hero-bg{
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.75), rgba(0,0,0,.25)),
+    url("/static/img/pt_bg.jpg");
+  background-size: cover;
+  background-position: center;
+  filter: saturate(1.05) contrast(1.05);
+}
+
+.hero-bg{
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.75), rgba(0,0,0,.30)),
+    url("/static/img/hero_vehicle.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.pt-hero > div, .vehicle-hero > div{
+  position: relative;
+  z-index: 1;
+}
+
+/* warna teks di atas banner */
+.text-white-75{ color: rgba(255,255,255,.82) !important; }
+.text-white-50{ color: rgba(255,255,255,.58) !important; }
+
+/* mini card di hero */
+.mini-card{ border-radius: 18px; }
+.icon-circle{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(255,255,255,.88);
+}
+
+/* logo kecil di login */
+.brand-mark{
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,193,7,1), rgba(255,255,255,.3));
+  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+}
+
+.table thead th{ font-weight: 700; letter-spacing: .2px; }
+.table td, .table th{ vertical-align: middle; }
+
+/* biar tombol & card keliatan lebih premium */
+.card.shadow-lg, .glass.shadow-lg{
+  box-shadow: 0 18px 50px rgba(0,0,0,.25) !important;
+}

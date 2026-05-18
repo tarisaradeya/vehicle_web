@@ -1,0 +1,551 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root{
+  --home-bg:#eef2f7;
+  --hero-blue:#294a87;
+  --hero-gold:#e3aa33;
+  --navy-1:#0b294b;
+  --navy-2:#08203f;
+  --text-1:#20385f;
+  --text-2:#66748f;
+  --line:#e7edf6;
+  --danger:#d92d20;
+  --danger-soft:#fff1f1;
+  --danger-border:#f2b8b5;
+  --danger-ink:#a61b14;
+  --warn:#f5a623;
+  --warn-soft:#fff7e8;
+  --warn-border:#ffd38a;
+  --safe:#16a34a;
+  --safe-soft:#edfdf3;
+  --white:#fff;
+  --shadow-lg:0 18px 30px rgba(7,21,44,.12);
+  --shadow-sm:0 10px 24px rgba(14,30,58,.06);
+}
+
+.home-shell{
+  background:linear-gradient(180deg,#eef3fa 0 30%,#102746 30% 100%);
+  padding-bottom:0;
+}
+.hero{
+  position:relative;overflow:hidden;min-height:530px;
+  background:linear-gradient(90deg,#284a87 0 77%,#e3aa33 77% 100%)
+}
+.hero:before{
+  content:"";position:absolute;left:51%;top:-8%;width:150px;height:130%;
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.03));
+  transform:rotate(12deg)
+}
+.hero-inner{
+  width:min(1240px,calc(100% - 40px));margin:0 auto;display:grid;
+  grid-template-columns:minmax(0,1fr) 300px;min-height:530px
+}
+.hero-left{padding:52px 0 30px 34px;position:relative;z-index:2}
+.hero-badge{
+  display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 16px;border-radius:999px;
+  background:rgba(255,255,255,.09);color:#fff;font-size:.70rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase
+}
+.hero-title{
+  margin:18px 0 0;color:#fff;font-size:3.4rem;line-height:.96;font-weight:900;letter-spacing:-.03em;text-transform:uppercase
+}
+.hero-line{width:198px;height:4px;border-radius:999px;background:#ebb43e;margin:18px 0 14px}
+.hero-sub{margin:0;color:rgba(255,255,255,.92);font-size:.98rem;font-weight:500}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+.hero-btn{
+  height:44px;padding:0 18px;border-radius:15px;display:inline-flex;align-items:center;gap:10px;
+  font-size:.84rem;font-weight:800;border:2px solid #e5a92a;transition:.18s ease;text-decoration:none
+}
+.hero-btn.primary{background:#e5a92a;color:#fff}
+.hero-btn.secondary{background:transparent;color:#fff}
+.hero-btn:hover{transform:translateY(-1px);color:#fff}
+
+/* ── CARDS ── */
+.cards-section{
+  position:relative;z-index:3;
+  width:min(1240px,calc(100% - 40px));
+  margin:-112px auto 0;
+  padding-bottom:36px;
+}
+.cards-row{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:16px;
+}
+.dash-card{
+  position:relative;border-radius:16px;padding:14px 14px 12px;overflow:hidden;
+  background:linear-gradient(180deg,#0b294b,#08203f);
+  box-shadow:0 8px 18px rgba(7,21,44,.16);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.dash-card:hover{transform:translateY(-2px);box-shadow:0 14px 26px rgba(7,21,44,.24);}
+.dash-card::before{ display:none; }
+.dash-ico{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:.85rem;color:rgba(255,255,255,.7);
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);
+}
+.dash-title{
+  margin:10px 0 3px;color:#fff;font-size:.85rem;font-weight:800;line-height:1.2;
+}
+.dash-sub{margin:0 0 10px;color:rgba(255,255,255,.45);font-size:.72rem;line-height:1.35;}
+.dash-divider{
+  height:1px;background:rgba(255,255,255,.06);margin-bottom:10px;
+}
+.dash-btns{
+  display:flex;gap:6px;
+}
+.dash-btn{
+  flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  height:26px;border-radius:8px;
+  font-size:.68rem;font-weight:800;text-decoration:none;
+  transition:background .15s,border-color .15s;
+}
+.dash-btn.primary{
+  background:rgba(255,255,255,.12);color:#fff;
+  border:1px solid rgba(255,255,255,.15);
+}
+.dash-btn.primary:hover{background:rgba(255,255,255,.18);color:#fff;}
+.dash-btn.ghost{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.11);
+  color:rgba(255,255,255,.7);
+}
+.dash-btn.ghost:hover{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2);}
+
+/* ── ALERT SECTION ── */
+.alerts-shell{
+  width:min(1240px,calc(100% - 40px));
+  margin:0 auto;
+  padding-bottom:56px;
+  position:relative;
+  z-index:2;
+}
+.alerts-head{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.alerts-title{
+  margin:0;color:rgba(255,255,255,.32);font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+}
+.alerts-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+  align-items:start;
+}
+
+.alert-card{
+  background:rgba(10,28,58,.7);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:12px;
+  overflow:hidden;
+  position:relative;
+}
+/* colour accent top bar per category */
+.alert-card::before{
+  content:"";
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--ac-bar, rgba(255,255,255,.08));
+  border-radius:16px 16px 0 0;
+}
+
+.ac-label{
+  font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dot-c, rgba(255,255,255,.35));
+  margin-bottom:8px;margin-top:4px;
+  display:flex;align-items:center;gap:5px;
+}
+.ac-label i{ font-size:.72rem; }
+.ac-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--dot-c,rgba(255,255,255,.3));flex-shrink:0;
+}
+
+.alert-list{display:flex;flex-direction:column;gap:5px;}
+
+/* ── warn-item: the hero of the page ── */
+.warn-item{
+  border-radius:10px;
+  padding:9px 11px;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.06);
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  text-decoration:none;
+  transition:background .12s,border-color .12s,transform .12s;
+  position:relative;
+  overflow:hidden;
+}
+.warn-item:hover{
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.12);
+  transform:translateY(-1px);
+}
+.warn-item.overdue{
+  background:rgba(220,53,69,.08);
+  border-color:rgba(220,53,69,.25);
+}
+.warn-item.overdue::after{
+  content:"";
+  position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:#e05260;border-radius:10px 0 0 10px;
+}
+.warn-item.upcoming{
+  background:rgba(255,193,7,.05);
+  border-color:rgba(255,193,7,.15);
+}
+.warn-item.upcoming::after{
+  content:"";
+  position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:#ffc107;border-radius:10px 0 0 10px;
+}
+
+/* top row: PT badge + tanggal jatuh tempo */
+.wi-top{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+}
+
+/* PT badge */
+.wi-pt{
+  display:inline-block;
+  font-size:.6rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--dot-c, rgba(255,255,255,.6));
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:4px;
+  padding:1px 6px;
+  line-height:1.6;
+  flex-shrink:0;
+}
+.wi-date{
+  font-size:.62rem;font-weight:500;
+  color:rgba(255,255,255,.35);
+  white-space:nowrap;
+}
+
+/* nama kendaraan — full wrap, no truncation */
+.wi-name{
+  font-size:.8rem;font-weight:600;color:#e8edf4;
+  line-height:1.35;
+  word-break:break-word;
+}
+
+/* bottom row: plat + sisa hari */
+.wi-bottom{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+}
+.wi-plate{
+  font-size:.65rem;font-weight:600;
+  color:rgba(255,255,255,.4);
+  letter-spacing:.06em;
+  font-variant-numeric:tabular-nums;
+}
+.wi-sisa{
+  font-size:.75rem;font-weight:800;
+  white-space:nowrap;
+  letter-spacing:-.01em;
+}
+
+/* wi-left / wi-right no longer needed but kept for safety */
+.wi-left{ min-width:0;flex:1; }
+.wi-right{ text-align:right;flex-shrink:0; }
+
+.sisa-merah{ color:#f07070; }
+.sisa-kuning{ color:#ffc94d; }
+.sisa-hijau{ color:#5ddba8; }
+
+.alert-empty{
+  padding:14px 12px;
+  border:1px dashed rgba(255,255,255,.07);
+  border-radius:10px;
+  color:rgba(255,255,255,.2);
+  font-size:.72rem;
+  text-align:center;
+  font-style:italic;
+}
+
+.ac-tax   { --dot-c:#f0b429; --ac-bar:linear-gradient(90deg,#f0b42988,transparent); }
+.ac-kir   { --dot-c:#5ddba8; --ac-bar:linear-gradient(90deg,#5ddba888,transparent); }
+.ac-servis{ --dot-c:#60a5fa; --ac-bar:linear-gradient(90deg,#60a5fa88,transparent); }
+.ac-loan  { --dot-c:#c084fc; --ac-bar:linear-gradient(90deg,#c084fc88,transparent); }
+
+.c1,.c2,.c3,.c4,.c5{}
+
+@media (max-width:1200px){
+  .cards-row{grid-template-columns:repeat(3,1fr)}
+  .alerts-grid{grid-template-columns:repeat(2,1fr)}
+  .hero-title{font-size:3rem}
+}
+@media (max-width:900px){
+  .hero-inner{grid-template-columns:1fr}
+  .hero-left{padding-left:18px;padding-right:18px}
+  .cards-section{margin-top:-90px}
+  .cards-row{grid-template-columns:repeat(2,1fr)}
+  .hero-title{font-size:2.65rem}
+}
+@media (max-width:560px){
+  .hero{min-height:auto}
+  .hero-inner{min-height:auto}
+  .hero-left{padding:34px 10px 118px}
+  .hero-title{font-size:2.12rem}
+  .hero-sub{font-size:.90rem}
+  .hero-actions{gap:10px}
+  .hero-btn{width:100%;justify-content:center}
+  .cards-section{margin-top:-88px;width:min(1240px,calc(100% - 20px))}
+  .cards-row{grid-template-columns:1fr}
+  .alerts-shell{width:min(1240px,calc(100% - 20px))}
+  .alerts-grid{grid-template-columns:1fr}
+}
+
+/* ===== PATCH RINGAN: TAMPILAN/WARNA TETAP, CUMA KOTAK & EFEK BERAT DIMATIKAN ===== */
+*{
+  animation:none!important;
+  transition:none!important;
+}
+
+.hero,
+.hero-badge,
+.hero-btn,
+.dash-card,
+.dash-ico,
+.dash-btn,
+.alert-card,
+.warn-item,
+.wi-pt,
+.alert-empty{
+  border-radius:4px!important;
+}
+
+.hero:before{
+  display:none!important;
+}
+
+.dash-card,
+.alert-card{
+  box-shadow:none!important;
+}
+
+.dash-card:hover,
+.warn-item:hover,
+.hero-btn:hover{
+  transform:none!important;
+}
+
+.dash-card:hover{
+  box-shadow:none!important;
+}
+
+.warn-item.overdue::after,
+.warn-item.upcoming::after{
+  border-radius:0!important;
+}
+
+</style>
+
+<section class="home-shell">
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-badge">SINAR GROUP FLEET MANAGEMENT</div>
+        <h1 class="hero-title">VEHICLE<br>MAINTENANCE</h1>
+        <div class="hero-line"></div>
+        <p class="hero-sub">Vehicle and operations management.</p>
+        <div class="hero-actions">
+          <a class="hero-btn primary" href="{{ url_for('main.kendaraan') }}"><i class="bi bi-folder2-open"></i>BUKA FILE MANAGER</a>
+          <a class="hero-btn secondary" href="{{ url_for('main.kendaraan', due='1') }}"><i class="bi bi-clock-history"></i>LIHAT JATUH TEMPO</a>
+        </div>
+      </div>
+      <div></div>
+    </div>
+  </section>
+
+  <section class="cards-section">
+    <div class="cards-row">
+
+      <div class="dash-card c1">
+        <div class="dash-ico"><i class="bi bi-folder2-open"></i></div>
+        <div class="dash-title">Kendaraan</div>
+        <p class="dash-sub">Daftar aset, detail unit, dan manajemen kendaraan.</p>
+        <div class="dash-divider"></div>
+        <div class="dash-btns">
+          <a href="{{ url_for('main.kendaraan') }}" class="dash-btn primary"><i class="bi bi-table"></i> Data</a>
+          <a href="{{ url_for('main.history_user') }}" class="dash-btn ghost"><i class="bi bi-clock-history"></i> Riwayat</a>
+        </div>
+      </div>
+
+      <div class="dash-card c2">
+        <div class="dash-ico"><i class="bi bi-receipt-cutoff"></i></div>
+        <div class="dash-title">Pajak</div>
+        <p class="dash-sub">Pajak tahunan dan 5 tahunan seluruh kendaraan.</p>
+        <div class="dash-divider"></div>
+        <div class="dash-btns">
+          <a href="{{ url_for('main.go_data_pajak') }}" class="dash-btn primary"><i class="bi bi-table"></i> Data</a>
+          <a href="{{ url_for('main.history_pembayaran') }}" class="dash-btn ghost"><i class="bi bi-clock-history"></i> Riwayat</a>
+        </div>
+      </div>
+
+      <div class="dash-card c3">
+        <div class="dash-ico"><i class="bi bi-tools"></i></div>
+        <div class="dash-title">Servis</div>
+        <p class="dash-sub">Jadwal servis, vendor, biaya, dan catatan bengkel.</p>
+        <div class="dash-divider"></div>
+        <div class="dash-btns">
+          <a href="{{ url_for('main.go_data_servis') }}" class="dash-btn primary"><i class="bi bi-table"></i> Data</a>
+          <a href="{{ url_for('main.history_servis') }}" class="dash-btn ghost"><i class="bi bi-clock-history"></i> Riwayat</a>
+        </div>
+      </div>
+
+      <div class="dash-card c4">
+        <div class="dash-ico"><i class="bi bi-clipboard2-check"></i></div>
+        <div class="dash-title">KIR</div>
+        <p class="dash-sub">Masa aktif KIR dan jadwal perpanjangan kendaraan.</p>
+        <div class="dash-divider"></div>
+        <div class="dash-btns">
+          <a href="{{ url_for('main.go_data_kir') }}" class="dash-btn primary"><i class="bi bi-table"></i> Data</a>
+          <a href="{{ url_for('main.history_kir') }}" class="dash-btn ghost"><i class="bi bi-clock-history"></i> Riwayat</a>
+        </div>
+      </div>
+
+      <div class="dash-card c5">
+        <div class="dash-ico"><i class="bi bi-arrow-left-right"></i></div>
+        <div class="dash-title">Peminjaman</div>
+        <p class="dash-sub">Kelola peminjaman, peminjam, dan status pengembalian.</p>
+        <div class="dash-divider"></div>
+        <div class="dash-btns">
+          <a href="{{ url_for('main.peminjaman') }}" class="dash-btn primary"><i class="bi bi-table"></i> Data</a>
+          <a href="{{ url_for('main.history_peminjaman') }}" class="dash-btn ghost"><i class="bi bi-clock-history"></i> Riwayat</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="alerts-shell">
+    <div class="alerts-head">
+      <p class="alerts-title">Pengingat Jatuh Tempo</p>
+    </div>
+
+    <div class="alerts-grid">
+
+      {# ── PAJAK ── #}
+      <div class="alert-card ac-tax">
+        <div class="ac-label"><span class="ac-dot"></span><i class="bi bi-receipt-cutoff"></i> Pajak</div>
+        <div class="alert-list">
+          {% for item in alert_groups.tax[:5] %}
+          <a class="warn-item {% if item.status == 'overdue' %}overdue{% elif item.sisa_class == 'sisa-kuning' %}upcoming{% endif %}" href="{{ item.link }}">
+            <div class="wi-top">
+              <span class="wi-pt">{{ item.vehicle.pt or '-' }}</span>
+              <span class="wi-date">{{ item.due_display or '-' }}</span>
+            </div>
+            <div class="wi-name">{{ vehicle_display_name(item.vehicle) }}</div>
+            <div class="wi-bottom">
+              <span class="wi-plate">{{ vehicle_plate(item.vehicle) }}</span>
+              <span class="wi-sisa {{ item.sisa_class }}">{{ item.sisa_text }}</span>
+            </div>
+          </a>
+          {% else %}
+          <div class="alert-empty">Belum ada alert pajak.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# ── KIR ── #}
+      <div class="alert-card ac-kir">
+        <div class="ac-label"><span class="ac-dot"></span><i class="bi bi-clipboard2-pulse"></i> KIR</div>
+        <div class="alert-list">
+          {% for item in alert_groups.kir[:5] %}
+          <a class="warn-item {% if item.status == 'overdue' %}overdue{% elif item.sisa_class == 'sisa-kuning' %}upcoming{% endif %}" href="{{ item.link }}">
+            <div class="wi-top">
+              <span class="wi-pt">{{ item.vehicle.pt or '-' }}</span>
+              <span class="wi-date">{{ item.due_display or '-' }}</span>
+            </div>
+            <div class="wi-name">{{ vehicle_display_name(item.vehicle) }}</div>
+            <div class="wi-bottom">
+              <span class="wi-plate">{{ vehicle_plate(item.vehicle) }}</span>
+              <span class="wi-sisa {{ item.sisa_class }}">{{ item.sisa_text }}</span>
+            </div>
+          </a>
+          {% else %}
+          <div class="alert-empty">Belum ada alert KIR.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# ── SERVIS ── #}
+      <div class="alert-card ac-servis">
+        <div class="ac-label"><span class="ac-dot"></span><i class="bi bi-tools"></i> Servis</div>
+        <div class="alert-list">
+          {% for item in alert_groups.service[:5] %}
+          <a class="warn-item {% if item.status == 'overdue' %}overdue{% elif item.sisa_class == 'sisa-kuning' %}upcoming{% endif %}" href="{{ item.link }}">
+            <div class="wi-top">
+              <span class="wi-pt">{{ item.vehicle.pt or '-' }}</span>
+              <span class="wi-date">{{ item.due_display or '-' }}</span>
+            </div>
+            <div class="wi-name">{{ vehicle_display_name(item.vehicle) }}</div>
+            <div class="wi-bottom">
+              <span class="wi-plate">{{ vehicle_plate(item.vehicle) }}</span>
+              <span class="wi-sisa {{ item.sisa_class }}">{{ item.sisa_text }}</span>
+            </div>
+          </a>
+          {% else %}
+          <div class="alert-empty">Belum ada alert servis.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# ── PEMINJAMAN ── #}
+      <div class="alert-card ac-loan">
+        <div class="ac-label"><span class="ac-dot"></span><i class="bi bi-arrow-left-right"></i> Peminjaman</div>
+        <div class="alert-list">
+          {% for item in alert_groups.loan[:5] %}
+          <a class="warn-item {% if item.status == 'overdue' %}overdue{% elif item.sisa_class == 'sisa-kuning' %}upcoming{% endif %}" href="{{ item.link }}">
+            <div class="wi-top">
+              <span class="wi-pt">{{ item.vehicle.pt or '-' }}</span>
+              <span class="wi-date">{{ item.due_display or '-' }}</span>
+            </div>
+            <div class="wi-name">{{ vehicle_display_name(item.vehicle) }}</div>
+            <div class="wi-bottom">
+              <span class="wi-plate">{{ vehicle_plate(item.vehicle) }}</span>
+              <span class="wi-sisa {{ item.sisa_class }}">{{ item.sisa_text }}</span>
+            </div>
+          </a>
+          {% else %}
+          <div class="alert-empty">Belum ada alert peminjaman.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <form id="claimTaxForm" method="post" action="{{ url_for('main.alert_pajak_claim') }}" style="display:none">
+    <input type="hidden" name="vehicle_id">
+    <input type="hidden" name="record_id">
+    <input type="hidden" name="kind">
+    <input type="hidden" name="due_date">
+    <input type="hidden" name="paid_date">
+    <input type="hidden" name="amount">
+    <input type="hidden" name="note">
+  </form>
+</section>
+
+<script>
+function claimTax(btn){
+  const form=document.getElementById("claimTaxForm");
+  if(!form) return;
+  const paidDate=window.prompt(
+    `Tanggal bayar untuk ${btn.dataset.name}\n${btn.dataset.plate}\nFormat: YYYY-MM-DD`,
+    new Date().toISOString().slice(0,10)
+  );
+  if(paidDate===null) return;
+  const amount=window.prompt(`Nominal ${btn.dataset.label}`, "0");
+  if(amount===null) return;
+  const note=window.prompt("Catatan (opsional)", "") ?? "";
+  form.vehicle_id.value=btn.dataset.vehicleId||"";
+  form.record_id.value=btn.dataset.recordId||"";
+  form.kind.value=btn.dataset.kind||"";
+  form.due_date.value=btn.dataset.dueDate||"";
+  form.paid_date.value=paidDate||"";
+  form.amount.value=amount||"0";
+  form.note.value=note;
+  form.submit();
+}
+</script>
+{% endblock %}

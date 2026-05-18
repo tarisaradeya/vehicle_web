@@ -1,0 +1,562 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root{
+  --bg1:#0b2343;
+  --bg2:#133a69;
+  --panel:#0d2748;
+  --panel2:#102f57;
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.12);
+  --soft:rgba(255,255,255,.82);
+  --muted:rgba(255,255,255,.62);
+  --warn:#f4b326;
+  --warn2:#ffd15f;
+  --shadow:0 10px 28px rgba(0,0,0,.22);
+}
+html,body{
+  height:100%;
+  overflow:hidden;
+  background:linear-gradient(180deg,var(--bg1) 0%,#12345c 52%,var(--bg2) 100%)!important;
+}
+.content-wrap{
+  min-height:unset!important;
+  height:calc(100vh - 88px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.wrap{
+  width:100%;
+  padding:10px 18px 10px;
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+.title{
+  margin:0;
+  color:#fff;
+  font-weight:900;
+  font-size:1.3rem;
+  line-height:1.08;
+  letter-spacing:.01em;
+}
+.sub,.note,.table-count{
+  margin:.28rem 0 0;
+  color:var(--soft);
+  font-size:.82rem;
+  line-height:1.3;
+}
+.note,.table-count{color:var(--muted)}
+.sec{
+  margin:0;
+  color:#fff;
+  font-size:1.02rem;
+  font-weight:900;
+  line-height:1.05;
+  text-transform:uppercase;
+}
+.panel{
+  background:#12355f;
+  border:1px solid var(--line);
+  border-radius:4px;
+  box-shadow:none;
+}
+.panel-pad{padding:8px}
+.panel-flex{
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+.search-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.search-field-main{flex:1 1 0;min-width:0;}
+.search-field-pt{flex:0 0 160px;}
+.form-control,.form-select{
+  width:100%;
+  min-height:32px;
+  height:32px;
+  border-radius:4px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#fff;
+  color:#10233f;
+  font-size:.82rem;
+  padding:0 11px;
+}
+.form-control::placeholder{color:#7c879a}
+.form-control:focus,.form-select:focus{
+  border-color:var(--warn);
+  box-shadow:none;
+}
+.btn-warning{
+  height:32px;
+  border-radius:4px;
+  font-size:.8rem;
+  font-weight:900;
+  background:linear-gradient(180deg,var(--warn2),var(--warn));
+  border-color:var(--warn);
+  color:#132849;
+}
+.btn-warning:hover{
+  background:linear-gradient(180deg,#ffe08b,#efb021);
+  border-color:#efb021;
+  color:#132849;
+}
+.btn-home,.btn-reset-search{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-decoration:none;
+  cursor:pointer;
+  user-select:none;
+  border:1px solid rgba(255,255,255,.12);
+  color:#fff;
+  background:rgba(255,255,255,.04);
+  
+  height:34px;
+  padding:0 12px;
+  border-radius:4px;
+  font-size:.79rem;
+  font-weight:800;
+}
+.btn-home:hover,.btn-reset-search:hover{
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  border-color:rgba(255,255,255,.18);
+}
+.grid-shell{
+  position:relative;
+  border:1px solid var(--line2);
+  border-radius:4px;
+  padding:10px;
+  background:rgba(255,255,255,.02);
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+.grid-head,.table-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.grid-head{margin-bottom:10px;align-items:flex-start}
+.table-wrap{
+  overflow:auto;
+  transform:translateZ(0);
+  border-radius:4px;
+  border:1px solid rgba(255,255,255,.08);
+  flex:1 1 0;
+  min-height:0;
+}
+
+/* ===== TABLE ===== */
+.table-sg{
+  width:100%;
+  margin:0;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:max-content;
+  table-layout:auto;
+  font-family:'Poppins',Arial,Helvetica,sans-serif;
+}
+.table-sg th,.table-sg td{box-shadow:inset -1px 0 0 rgba(255,255,255,.10)}
+.table-sg th:last-child,.table-sg td:last-child{box-shadow:none}
+.table-sg thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#1e5aa8;
+  color:#ffd15f;
+  padding:6px 8px;
+  font-size:10.5px;
+  font-weight:800;
+  line-height:1.2;
+  border-bottom:2px solid rgba(255,209,95,.25);
+  text-align:left;
+  white-space:nowrap;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+}
+.table-sg tbody tr:nth-child(odd){background:#0e2c55}
+.table-sg tbody tr:nth-child(even){background:#0b2649}
+.table-sg tbody tr:hover{background:#1a3f6e}
+.table-sg tbody td{
+  color:rgba(255,255,255,.92);
+  padding:6px 8px;
+  font-size:11.5px;
+  font-weight:500;
+  line-height:1.3;
+  vertical-align:middle;
+  border-top:1px solid rgba(255,255,255,.055);
+  white-space:normal;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+.table-sg tbody tr:first-child td{border-top:0}
+.cell-no{text-align:center}
+
+/* ===== COL WIDTHS — sama persis dengan kendaraan.html ===== */
+.table-sg col.no{width:54px}
+.table-sg col.c-tgl{width:100px}
+.table-sg col.c-oleh{width:90px}
+.table-sg col.c-pt{width:100px}
+.table-sg col.c-pt2{width:120px}
+.table-sg col.c-nama{width:150px}
+.table-sg col.c-nama2{width:140px}
+.table-sg col.c-nama3{width:140px}
+.table-sg col.c-merk{width:90px}
+.table-sg col.c-type{width:100px}
+.table-sg col.c-jenis{width:90px}
+.table-sg col.c-pol{width:100px}
+.table-sg col.c-pol2{width:100px}
+.table-sg col.c-thn{width:70px}
+.table-sg col.c-user{width:120px}
+.table-sg col.c-user2{width:120px}
+.table-sg col.c-status{width:100px}
+.table-sg col.c-pakai{width:110px}
+.table-sg col.c-kondisi{width:120px}
+.table-sg col.c-lokasi{width:110px}
+.table-sg col.c-ket{width:140px}
+
+/* ===== CHANGED CELL — merah ===== */
+.td-changed{
+  background:rgba(200,30,30,.22)!important;
+  border-left:3px solid rgba(220,60,60,.7)!important;
+}
+.val-old{
+  display:block;
+  font-size:10.5px;
+  color:rgba(255,140,140,.65);
+  text-decoration:line-through;
+  margin-bottom:2px;
+}
+.val-new{
+  display:block;
+  font-size:12.5px;
+  color:#ff9b9b;
+  font-weight:700;
+}
+
+/* ===== LEGEND ===== */
+.legend-box{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:.73rem;
+  color:var(--muted);
+}
+.legend-dot{
+  width:11px;height:11px;border-radius:3px;
+  background:rgba(200,30,30,.35);
+  border:1px solid rgba(220,60,60,.6);
+  flex-shrink:0;
+}
+
+/* ===== CUSTOM SELECT ===== */
+.custom-select-wrap{position:relative;width:160px;}
+.custom-select-btn{
+  width:100%;height:32px;border-radius:4px;
+  border:1px solid rgba(0,0,0,.15);
+  background:#fff;color:#10233f;font-size:.82rem;
+  padding:0 10px;display:flex;align-items:center;
+  justify-content:space-between;gap:6px;
+  cursor:pointer;white-space:nowrap;overflow:hidden;
+}
+.custom-select-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.custom-select-drop{
+  display:none;position:absolute;top:calc(100% + 4px);left:0;
+  width:220px;background:#12355f;
+  border:1px solid #1e4080;
+  border-radius:4px;box-shadow:none;
+  z-index:999;overflow:hidden;
+}
+.custom-select-drop.open{display:block;}
+.custom-select-search{
+  width:100%;border:none;border-bottom:1px solid rgba(255,255,255,.1);
+  background:#12355f;color:#fff;font-size:.80rem;padding:8px 12px;outline:none;
+}
+.custom-select-search::placeholder{color:rgba(255,255,255,.4);}
+.custom-select-list{max-height:220px;overflow-y:auto;padding:4px 0;}
+.cso{padding:7px 12px;font-size:.80rem;color:rgba(255,255,255,.85);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cso:hover{background:rgba(255,255,255,.08);color:#fff;}
+.cso.selected{background:#1e5aa8;color:#fff;font-weight:700;}
+
+@media(max-width:768px){
+  .wrap{padding:12px 12px 18px}
+  .page-head,.grid-head,.table-meta,.search-row{flex-direction:column;align-items:flex-start}
+  .title{font-size:1.46rem}
+  .search-field-main,.search-field-pt{width:100%;flex:1 1 auto}
+}
+
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <h1 class="title">Riwayat Kendaraan</h1>
+    <a class="btn-home" href="{{ url_for('main.home') }}">← Home</a>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="panel panel-pad mb-3">
+    <form method="get" action="{{ url_for('main.history_user') }}" autocomplete="off">
+      <div class="search-row">
+        <div class="search-field-main">
+          <input class="form-control" name="q" value="{{ q or '' }}"
+                 placeholder="Cari plat, merk, user, PT pemakai, field yang berubah...">
+        </div>
+        <div class="search-field-pt">
+          <div class="custom-select-wrap" id="ptSelectWrap">
+            <input type="hidden" name="company" id="ptHidden" value="{{ company or '' }}">
+            <button type="button" class="custom-select-btn" id="ptBtn">
+              <span id="ptLabel">{{ company if company else 'Semua PT' }}</span>
+              <i class="bi bi-chevron-down" style="font-size:.65rem;opacity:.4;color:#10233f"></i>
+            </button>
+            <div class="custom-select-drop" id="ptDrop">
+              <input type="text" class="custom-select-search" id="ptSearch" placeholder="Cari PT...">
+              <div class="custom-select-list" id="ptList">
+                <div class="cso {% if not company %}selected{% endif %}" data-val="">Semua PT</div>
+                {% for c in companies or [] %}
+                {% set cname = c.name if c.name is defined else c %}
+                <div class="cso {% if company==cname %}selected{% endif %}" data-val="{{ cname }}">{{ cname }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-warning">Cari</button>
+        <a href="{{ url_for('main.history_user') }}" class="btn-reset-search">Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- TABLE PANEL -->
+  <div class="panel panel-pad panel-flex">
+    <div class="grid-shell">
+      <div class="grid-head">
+        <div>
+          <h2 class="sec">Daftar Riwayat Kendaraan</h2>
+          <p class="note">Total sesi edit: {{ sessions|length }}</p>
+        </div>
+        <div class="legend-box">
+          <div class="legend-dot"></div>
+          <span>Data yang berubah</span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        {% if sessions %}
+        <table class="table-sg">
+          <colgroup>
+            <col class="no">
+            <col class="c-tgl">
+            <col class="c-oleh">
+            <col class="c-pt">
+            <col class="c-pt2">
+            <col class="c-nama">
+            <col class="c-nama2">
+            <col class="c-nama3">
+            <col class="c-merk">
+            <col class="c-type">
+            <col class="c-jenis">
+            <col class="c-pol">
+            <col class="c-pol2">
+            <col class="c-thn">
+            <col class="c-user">
+            <col class="c-user2">
+            <col class="c-status">
+            <col class="c-pakai">
+            <col class="c-kondisi">
+            <col class="c-lokasi">
+            <col class="c-ket">
+            {% for col in custom_columns or [] %}<col style="width:130px">{% endfor %}
+          </colgroup>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Tanggal</th>
+              <th>Diubah Oleh</th>
+              <th>PT</th>
+              <th>PT Pemilik Aset</th>
+              <th>Nama Aktiva</th>
+              <th>Nama Asset PT</th>
+              <th>Nama Aset Baru</th>
+              <th>Merk</th>
+              <th>Type</th>
+              <th>Jenis</th>
+              <th>No Polisi Lama</th>
+              <th>No Polisi Baru</th>
+              <th>Tahun</th>
+              <th>User Lama</th>
+              <th>User Baru</th>
+              <th>Status</th>
+              <th>PT Pemakai</th>
+              <th>Kondisi</th>
+              <th>Lokasi</th>
+              <th>Keterangan</th>
+              {% for col in custom_columns or [] %}<th>{{ col.column_label }}</th>{% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in sessions %}
+            {% set v = s.snapshot %}
+            {% set cf = s.changed_fields %}
+
+            <tr>
+              <td class="cell-no">{{ loop.index }}</td>
+
+              {# --- Tanggal --- #}
+              <td style="font-size:11.5px;color:var(--muted);">{{ fmt_tgl(s.changed_at) or '-' }}{% if s.changed_at %}<br><span style="font-size:10px;opacity:.7;">{{ s.changed_at.strftime('%H:%M') if s.changed_at.strftime is defined else '' }}</span>{% endif %}</td>
+
+              {# --- Diubah Oleh --- #}
+              <td>{{ s.changed_by or '-' }}</td>
+
+              {# --- PT --- #}
+              {% if 'pt' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['pt'].old or '-' }}</span><span class="val-new">{{ cf['pt'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.pt or '-' }}</td>{% endif %}
+
+              {# --- PT Pemilik Aset --- #}
+              {% if 'asset_owner_company_name' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['asset_owner_company_name'].old or '-' }}</span><span class="val-new">{{ cf['asset_owner_company_name'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.asset_owner_company_name or '-' }}</td>{% endif %}
+
+              {# --- Nama Aktiva --- #}
+              {% if 'active_name' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['active_name'].old or '-' }}</span><span class="val-new">{{ cf['active_name'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.active_name or '-' }}</td>{% endif %}
+
+              {# --- Nama Asset PT --- #}
+              {% if 'name_as_asset_pt' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['name_as_asset_pt'].old or '-' }}</span><span class="val-new">{{ cf['name_as_asset_pt'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.name_as_asset_pt or '-' }}</td>{% endif %}
+
+              {# --- Nama Aset Baru --- #}
+              {% if 'new_asset_name' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['new_asset_name'].old or '-' }}</span><span class="val-new">{{ cf['new_asset_name'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.new_asset_name or '-' }}</td>{% endif %}
+
+              {# --- Merk --- #}
+              {% if 'merk' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['merk'].old or '-' }}</span><span class="val-new">{{ cf['merk'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.merk or '-' }}</td>{% endif %}
+
+              {# --- Type --- #}
+              {% if 'type' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['type'].old or '-' }}</span><span class="val-new">{{ cf['type'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.type or '-' }}</td>{% endif %}
+
+              {# --- Jenis --- #}
+              {% if 'jenis' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['jenis'].old or '-' }}</span><span class="val-new">{{ cf['jenis'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.jenis or '-' }}</td>{% endif %}
+
+              {# --- No Polisi Lama --- #}
+              {% if 'plate_old' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['plate_old'].old or '-' }}</span><span class="val-new">{{ cf['plate_old'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.plate_old or '-' }}</td>{% endif %}
+
+              {# --- No Polisi Baru --- #}
+              {% if 'plate_new' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['plate_new'].old or '-' }}</span><span class="val-new">{{ cf['plate_new'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.plate_new or '-' }}</td>{% endif %}
+
+              {# --- Tahun --- #}
+              {% if 'year_of_use' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['year_of_use'].old or '-' }}</span><span class="val-new">{{ cf['year_of_use'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.year_of_use or '-' }}</td>{% endif %}
+
+              {# --- User Lama --- #}
+              {% if 'user_old' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['user_old'].old or '-' }}</span><span class="val-new">{{ cf['user_old'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.user_old or '-' }}</td>{% endif %}
+
+              {# --- User Baru --- #}
+              {% if 'user_new' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['user_new'].old or '-' }}</span><span class="val-new">{{ cf['user_new'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.user_new or '-' }}</td>{% endif %}
+
+              {# --- Status --- #}
+              {% if 'status' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['status'].old or '-' }}</span><span class="val-new">{{ cf['status'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.status or '-' }}</td>{% endif %}
+
+              {# --- PT Pemakai --- #}
+              {% if 'pt_pemakai_company_name' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['pt_pemakai_company_name'].old or '-' }}</span><span class="val-new">{{ cf['pt_pemakai_company_name'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.pt_pemakai_company_name or '-' }}</td>{% endif %}
+
+              {# --- Kondisi --- #}
+              {% if 'kondisi_terkini' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['kondisi_terkini'].old or '-' }}</span><span class="val-new">{{ cf['kondisi_terkini'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.kondisi_terkini or '-' }}</td>{% endif %}
+
+              {# --- Lokasi --- #}
+              {% if 'lokasi' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['lokasi'].old or '-' }}</span><span class="val-new">{{ cf['lokasi'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.lokasi or '-' }}</td>{% endif %}
+
+              {# --- Keterangan --- #}
+              {% if 'tambahan_keterangan' in cf %}
+              <td class="td-changed"><span class="val-old">{{ cf['tambahan_keterangan'].old or '-' }}</span><span class="val-new">{{ cf['tambahan_keterangan'].new or '-' }}</span></td>
+              {% else %}<td>{{ v.tambahan_keterangan or '-' }}</td>{% endif %}
+
+              {% for col in custom_columns or [] %}{% set ck = col.column_key %}{% if ck in cf %}<td class="td-changed"><span class="val-old">{{ cf[ck].old or '-' }}</span><span class="val-new">{{ cf[ck].new or '-' }}</span></td>{% else %}<td>{{ v[ck] or '-' }}</td>{% endif %}{% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% else %}
+        <table class="table-sg">
+          <colgroup>
+            <col class="no"><col class="c-tgl"><col class="c-oleh"><col class="c-pt"><col class="c-pt2"><col class="c-nama"><col class="c-nama2"><col class="c-nama3"><col class="c-merk"><col class="c-type"><col class="c-jenis"><col class="c-pol"><col class="c-pol2"><col class="c-thn"><col class="c-user"><col class="c-user2"><col class="c-status"><col class="c-pakai"><col class="c-kondisi"><col class="c-lokasi"><col class="c-ket">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>No</th><th>Tanggal</th><th>Diubah Oleh</th><th>PT</th><th>PT Pemilik Aset</th><th>Nama Aktiva</th><th>Nama Asset PT</th><th>Nama Aset Baru</th><th>Merk</th><th>Type</th><th>Jenis</th><th>No Polisi Lama</th><th>No Polisi Baru</th><th>Tahun</th><th>User Lama</th><th>User Baru</th><th>Status</th><th>PT Pemakai</th><th>Kondisi</th><th>Lokasi</th><th>Keterangan</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="22" style="padding:12px 10px;color:rgba(255,255,255,.45);font-size:.82rem;">Belum ada data riwayat user.</td></tr>
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+
+      <div class="table-meta">
+        <div class="table-count">Menampilkan maksimal 1000 sesi riwayat.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const wrap=document.getElementById('ptSelectWrap');if(!wrap)return;
+  const btn=document.getElementById('ptBtn'),drop=document.getElementById('ptDrop'),
+        search=document.getElementById('ptSearch'),list=document.getElementById('ptList'),
+        hidden=document.getElementById('ptHidden'),label=document.getElementById('ptLabel');
+  const items=[...list.querySelectorAll('.cso')];
+  btn.addEventListener('click',e=>{e.stopPropagation();drop.classList.toggle('open');if(drop.classList.contains('open'))search.focus();});
+  document.addEventListener('click',e=>{if(!wrap.contains(e.target))drop.classList.remove('open');});
+  search.addEventListener('input',()=>{const q=search.value.toLowerCase();items.forEach(i=>{i.style.display=i.textContent.toLowerCase().includes(q)?'':'none';});});
+  items.forEach(i=>i.addEventListener('click',()=>{hidden.value=i.dataset.val;label.textContent=i.textContent.trim();items.forEach(x=>x.classList.remove('selected'));i.classList.add('selected');drop.classList.remove('open');}));
+})();
+</script>
+{% endblock %}

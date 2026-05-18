@@ -1,0 +1,1860 @@
+{% extends "base.html" %}
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --bg1:#0b2343;
+  --bg2:#133a69;
+  --panel:#12355f;
+  --panel2:#0f2d54;
+  --blue:#1e5aa8;
+  --line:rgba(255,255,255,.12);
+  --line-soft:rgba(255,255,255,.07);
+  --text:#fff;
+  --soft:rgba(255,255,255,.82);
+  --muted:rgba(255,255,255,.60);
+  --warn:#f4b326;
+  --warn2:#ffd15f;
+  --danger:#ff6b6b;
+  --safe:#8fd19e;
+  --soon:#ffd166;
+  --empty:#c7ced9;
+}
+
+html,body{
+  height:100%;
+  overflow:hidden;
+  background:var(--bg1);
+}
+body{
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+
+}
+
+.content-wrap{
+  min-height:unset;
+  height:calc(100vh - 88px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+.wrap{
+  width:100%;
+  padding:10px 18px 10px;
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.title{
+  margin:0;
+  color:#fff;
+  font-weight:900;
+  font-size:1.3rem;
+  line-height:1.08;
+  letter-spacing:.01em
+}
+
+.sub,
+.note,
+.table-count{
+  margin:.28rem 0 0;
+  color:var(--soft);
+  font-size:.82rem;
+  line-height:1.3
+}
+
+.note,
+.table-count{color:var(--muted)}
+
+.sec{
+  margin:0;
+  color:#fff;
+  font-size:1.02rem;
+  font-weight:900;
+  line-height:1.05;
+  text-transform:uppercase
+}
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+  border-radius:4px;
+  box-shadow:none
+}
+.panel-pad{padding:8px}
+.panel-flex{
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.form-control,
+.form-select{
+  width:100%;
+  min-height:32px;
+  height:32px;
+  border-radius:4px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:#10233f;
+  font-size:.82rem;
+  padding:0 11px
+}
+
+textarea.form-control{
+  min-height:72px;
+  height:auto;
+  padding:8px 12px;
+  background:var(--panel);
+  color:#fff
+}
+
+.btn-warning,
+.btn-pay,
+.btn-modal-submit,
+.btn-add,
+.btn-solid{
+  height:32px;
+  border-radius:4px;
+  font-size:.8rem;
+  font-weight:900;
+  background:var(--warn);
+  border:1px solid var(--warn);
+  color:#132849;
+  cursor:pointer
+}
+
+.btn-warning:hover,
+.btn-pay:hover,
+.btn-modal-submit:hover,
+.btn-add:hover,
+.btn-solid:hover{
+  background:var(--warn2);
+  border-color:var(--warn2);
+  color:#132849
+}
+
+.btn-secondary{
+  background:#4d6a8a;
+  border-color:#4d6a8a;
+  color:#fff;
+}
+.btn-secondary:hover{
+  background:#5a7898;
+  border-color:#5a7898;
+  color:#fff;
+}
+
+.search-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.search-field-main{flex:1 1 0;min-width:0}
+.search-field-status{flex:0 0 180px}
+.search-field-pt{flex:0 0 160px}
+
+/* search context: white inputs */
+.search-row .custom-select-btn{background:#fff;color:#10233f}
+.search-row .custom-select-btn span{color:#10233f}
+
+.custom-select-wrap{
+  position:relative;
+  width:100%;
+}
+.custom-select-btn{
+  width:100%;
+  height:32px;
+  border-radius:4px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:#10233f;
+  font-size:.82rem;
+  padding:0 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.custom-select-btn span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.custom-select-drop{
+  display:none;
+  position:absolute;
+  top:calc(100% + 4px);
+  left:0;
+  min-width:220px;
+  width:220px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:4px;
+  z-index:9999;
+  overflow:hidden;
+}
+.custom-select-drop.open{display:block}
+.custom-select-search{
+  width:100%;
+  border:none;
+  border-bottom:1px solid var(--line-soft);
+  background:var(--panel);
+  color:#fff;
+  font-size:.80rem;
+  font-weight:600;
+  padding:9px 12px;
+  outline:none;
+  letter-spacing:.01em;
+}
+.custom-select-search::placeholder{color:rgba(255,255,255,.38);font-weight:400}
+.custom-select-list{
+  max-height:220px;
+  overflow-y:auto;
+  padding:4px 0;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.18) transparent;
+}
+.cso{
+  padding:8px 14px;
+  font-size:.82rem;
+  color:#fff;
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.cso:hover{background:rgba(255,255,255,.08);color:#fff}
+.cso.selected{background:rgba(255,255,255,.08);color:#fff;font-weight:bold}
+
+.grid-head,
+.table-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.btn-home,
+.btn-reset-search,
+.btn-line,
+.btn-modal-close,
+.mini-tool,
+.menu-btn,
+.btn-mini,
+.btn-export-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-decoration:none;
+  cursor:pointer;
+  user-select:none;
+  border:1px solid var(--line);
+  color:#fff;
+  background:rgba(255,255,255,.045);
+}
+
+.btn-home,
+.btn-reset-search,
+.btn-line,
+.btn-modal-close,
+.btn-mini{
+  height:34px;
+  padding:0 12px;
+  border-radius:4px;
+  font-size:.79rem;
+  font-weight:800;
+}
+
+.btn-home:hover,
+.btn-reset-search:hover,
+.btn-line:hover,
+.btn-modal-close:hover,
+.mini-tool:hover,
+.menu-btn:hover,
+.btn-mini:hover,
+.btn-export-icon:hover{
+  background:rgba(255,255,255,.09);
+  color:#ffd15f;
+  border-color:rgba(255,255,255,.20)
+}
+
+.form-label{
+  color:rgba(255,255,255,.6);
+  font-size:.71rem;
+  font-weight:600;
+  margin:0 0 2px
+}
+
+.form-control::placeholder{color:#7c879a}
+textarea.form-control::placeholder{color:rgba(255,255,255,.32)}
+
+.form-control:focus,
+.form-select:focus{
+  border-color:var(--warn);
+  box-shadow:0 0 0 .14rem rgba(244,179,38,.14);
+}
+.form-control[readonly]{background:rgba(255,255,255,.05);color:var(--warn2)}
+
+.grid-shell{
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:10px;
+  background:rgba(255,255,255,.025);
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.grid-head,
+.table-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.grid-head{
+  margin-bottom:10px;
+  align-items:flex-start;
+}
+
+.grid-head-left{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-height:48px
+}
+
+.grid-toolbar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+  width:auto
+}
+
+.toolbar-actions{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:4px;
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+}
+
+.mini-tool,
+.menu-btn,
+.btn-export-icon{
+  width:32px;
+  height:32px;
+  border-radius:4px;
+  padding:0
+}
+
+.mini-tool svg,
+.menu-btn svg,
+.btn-export-icon svg{
+  width:16px;
+  height:16px;
+  stroke:currentColor;
+  stroke-width:2;
+  fill:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  overflow:visible
+}
+
+.mini-tool:disabled,.mini-tool.is-disabled{opacity:.5;cursor:not-allowed}
+
+.detail-dropdown-wrap{position:relative;display:inline-block}
+.detail-dropdown-btn{
+  height:34px;
+  padding:0 12px;
+  border-radius:4px;
+  font-size:.79rem;
+  font-weight:800;
+  background:var(--warn);
+  border:1px solid var(--warn);
+  color:#132849;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer
+}
+.detail-dropdown-btn:hover{
+  background:var(--warn2);
+  border-color:var(--warn2);
+  color:#132849
+}
+.detail-dropdown-list{
+  display:none;
+  position:absolute;
+  top:calc(100% + 4px);
+  right:0;
+  width:280px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:4px;
+  box-shadow:none;
+  z-index:9999;
+  overflow:hidden
+}
+.detail-dropdown-list.open{display:block}
+.detail-dropdown-search{
+  width:100%;
+  border:none;
+  border-bottom:1px solid var(--line-soft);
+  background:var(--panel);
+  color:#fff;
+  font-size:.80rem;
+  padding:8px 12px;
+  outline:none
+}
+.detail-dropdown-search::placeholder{color:rgba(255,255,255,.4)}
+.detail-dropdown-items{
+  max-height:220px;
+  overflow-y:auto;
+  padding:4px 0;
+  scrollbar-color:rgba(255,255,255,.15) transparent;
+  scrollbar-width:thin;
+}
+.detail-item-option{
+  padding:7px 12px;
+  font-size:.80rem;
+  color:rgba(255,255,255,.85);
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  text-decoration:none;
+  display:block;
+  background:none;
+  width:100%;
+  text-align:left;
+  border:none;
+  line-height:1.3;
+}
+.detail-item-option:hover{background:rgba(255,255,255,.08);color:#fff;text-decoration:none}
+
+.table-wrap{
+  overflow:auto;
+  transform:translateZ(0); /* GPU layer for smooth scroll */
+  border-radius:4px;
+  border:1px solid var(--line-soft);
+  flex:1 1 0;
+  min-height:0;
+  background:#0b2649;
+}
+
+.table-sg{
+  width:100%;
+  margin:0;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:1680px;
+  table-layout:fixed;
+  font-family:'Poppins',Arial,Helvetica,sans-serif
+}
+
+.table-sg th,.table-sg td{box-shadow:inset -1px 0 0 rgba(255,255,255,.10)}
+.table-sg th:last-child,.table-sg td:last-child{box-shadow:none}
+
+.table-sg thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:var(--blue);
+  color:var(--warn2);
+  padding:8px 10px;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+  border-bottom:2px solid rgba(255,209,95,.30);
+  text-align:left;
+  white-space:nowrap;
+  letter-spacing:.03em;
+  text-transform:uppercase
+}
+
+.table-sg tbody tr:nth-child(odd){background:#0e2c55}
+.table-sg tbody tr:nth-child(even){background:#0c274b}
+.table-sg tbody tr:hover{background:#143761}
+.table-sg tbody tr.is-selected{background:#31588c;outline:1px solid rgba(255,209,95,.55);outline-offset:-1px}
+
+.table-sg tbody td{
+  color:rgba(255,255,255,.92);
+  padding:8px 10px;
+  font-size:12.5px;
+  font-weight:500;
+  line-height:1.3;
+  vertical-align:middle;
+  white-space:normal;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.10),inset 0 1px 0 rgba(255,255,255,.07)
+}
+
+.table-sg col.no{width:54px}
+.table-sg col.c-pt{width:140px}
+.table-sg col.c-kendaraan{width:300px}
+.table-sg col.c-exp{width:170px}
+.table-sg col.c-status{width:150px}
+.table-sg col.c-vendor{width:190px}
+.table-sg col.c-odo{width:110px}
+.table-sg col.c-aksi{width:120px}
+.table-sg col.c-note{width:240px}
+.table-sg col.c-export{width:80px}
+
+.cell-no{text-align:center}
+.vehicle-main{font-weight:800;color:#fff;line-height:1.28}
+.vehicle-detail-link{color:inherit;text-decoration:none;display:inline-block}
+.vehicle-detail-link:hover{color:#ffd15f;text-decoration:none}
+.pt-detail-link{color:inherit;text-decoration:none;font-weight:800}
+.pt-detail-link:hover{color:#ffd15f;text-decoration:none}
+.vehicle-sub{margin-top:4px;color:rgba(255,255,255,.68);font-size:11px;line-height:1.25}
+.table-note{color:rgba(255,255,255,.78)}
+
+.action-stack{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:nowrap}
+.action-stack .btn-pay{height:26px;padding:0 8px;border-radius:7px;font-size:.72rem;white-space:nowrap}
+.action-stack .mini-tool{width:26px;height:26px;border-radius:7px}
+.action-stack .mini-tool svg{width:13px;height:13px}
+
+.badge-status{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.badge-danger{background:rgba(255,107,107,.18);color:#ffd2d2;border:1px solid rgba(255,107,107,.35)}
+.badge-soon{background:rgba(255,209,102,.18);color:#ffebb3;border:1px solid rgba(255,209,102,.35)}
+.badge-safe{background:rgba(143,209,158,.16);color:#d5ffe0;border:1px solid rgba(143,209,158,.35)}
+.badge-empty{background:rgba(199,206,217,.14);color:#eef3fb;border:1px solid rgba(199,206,217,.30)}
+
+.empty-box{
+  padding:42px 16px;
+  color:rgba(255,255,255,.75);
+  text-align:center;
+  font-size:.9rem
+}
+
+/* ===== MODAL ===== */
+.modal-dark{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(3,11,24,.75);
+  z-index:1200;
+  padding:16px;
+  overflow-y:auto
+}
+.modal-dark.show{display:flex;align-items:center;justify-content:center}
+.modal-dark .modal-dialog{
+  max-width:860px;
+  width:94%;
+  margin:auto;
+  transform:none;
+  opacity:1;
+}
+.modal-dark .modal-content{
+  background:var(--panel);
+  color:#fff;
+  border:1px solid var(--line);
+  border-radius:4px;
+  box-shadow:none;
+  overflow:hidden;
+  max-height:90vh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+.modal-dark .modal-header,
+.modal-dark .modal-footer{
+  padding:12px 16px;
+  border-color:var(--line-soft);
+}
+.modal-dark .modal-body{padding:14px 16px;overflow-y:auto;flex:1 1 auto;min-height:100px}
+.modal-dark .modal-title{margin:0;font-size:.95rem;font-weight:900}
+.modal-dark .btn-close{filter:invert(1)}
+.modal-dark .form-control,
+.modal-dark .form-select,
+.modal-dark .info-card{
+  min-height:32px;
+  height:32px;
+  border-radius:4px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:.82rem;
+  font-weight:600;
+  padding:0 11px;
+  box-shadow:none;
+}
+.modal-dark .form-control[readonly],
+.modal-dark .info-card{background:rgba(255,255,255,.05);color:var(--warn2)}
+.modal-dark textarea.form-control{height:auto;min-height:72px;padding:8px 12px;background:var(--panel);color:#fff}
+.modal-dark .form-control:focus,.modal-dark .form-select:focus{outline:none;border-color:var(--warn);background:rgba(255,255,255,.08);color:#fff;box-shadow:0 0 0 .14rem rgba(244,179,38,.14)}
+.modal-dark .form-select option{background:#0d2a4e;color:#fff}
+.modal-dark .form-label{color:var(--muted);font-size:.71rem;font-weight:600;margin:0 0 2px}
+.modal-dark input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.8}
+.modal-dark input[type="date"]{background:#fff;color:#111}
+.modal-dark textarea.form-control::placeholder{color:rgba(255,255,255,.32)}
+
+.alert-inline{
+  padding:8px 10px;
+  border-radius:4px;
+  border:1px solid rgba(255,209,102,.25);
+  background:rgba(255,209,102,.08);
+  color:#ffe7a3;
+  font-size:.75rem;
+  line-height:1.4;
+}
+.modal-footer-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;width:100%}
+.info-card{min-height:32px;border-radius:4px;border:1px solid var(--line-soft);background:rgba(255,255,255,.05);display:flex;align-items:center;padding:0 11px;color:#fff;font-size:.82rem;font-weight:600}
+
+/* Detail modal */
+.detail-modal .modal-body{max-height:70vh;overflow-y:auto}
+.detail-section{margin-bottom:20px}
+.detail-section h6{margin:0 0 12px;color:var(--warn2);font-size:.9rem;font-weight:800;text-transform:uppercase}
+.detail-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:.85rem}
+.detail-item:last-child{border-bottom:0}
+.detail-label{color:rgba(255,255,255,.6);font-weight:600}
+.detail-value{color:#fff;text-align:right;font-weight:500}
+
+/* Servis-specific: detail rich value */
+.detail-rich-value{display:flex;flex-direction:column;align-items:flex-end;gap:6px;max-width:62%;text-align:right}
+.detail-bullets{display:flex;flex-direction:column;gap:6px;align-items:flex-end;width:100%}
+.detail-bullet{display:flex;justify-content:flex-end;gap:8px;line-height:1.35;width:100%}
+.detail-bullet-name{color:rgba(255,255,255,.82);font-weight:600}
+.detail-bullet-cost{color:#ffd15f;font-weight:800;white-space:nowrap}
+.detail-total-box{margin-top:4px;padding-top:6px;border-top:1px dashed rgba(255,255,255,.14);font-weight:800;color:#ffd15f;width:100%}
+
+/* Service modal - input warna lebih terang */
+.service-modal .form-control,
+.service-modal .form-select{background:rgba(255,255,255,.08);color:#fff}
+.service-modal .form-control[readonly]{background:rgba(255,255,255,.05);color:var(--warn2)}
+.service-modal .form-control::placeholder{color:rgba(255,255,255,.52)}
+.service-modal .form-control:focus,
+.service-modal .form-select:focus{background:rgba(255,255,255,.08);color:#fff;border-color:var(--warn2);box-shadow:none}
+.service-modal .form-select option{background:#0d2a4e;color:#fff}
+.service-modal input[type="number"]{font-weight:700;color:#fff}
+.service-modal textarea.form-control{height:auto;min-height:72px;padding:8px 12px}
+
+/* Items (rincian servis) */
+.items-wrap{border:1px solid rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.items-head{display:grid;grid-template-columns:1.2fr 1fr 140px 40px;background:rgba(255,255,255,.04);padding:7px 10px}
+.items-head span{font-size:.66rem;font-weight:800;color:rgba(255,255,255,.42);text-transform:uppercase;letter-spacing:.05em}
+.item-row{display:grid;grid-template-columns:1.2fr 1fr 130px 32px;align-items:center;padding:5px 8px;border-top:1px solid rgba(255,255,255,.06);gap:6px}
+.item-row:first-child{border-top:0}
+.item-row .form-control{min-height:30px;height:30px;border-radius:4px;font-size:.8rem;background:rgba(255,255,255,.08);color:#fff}
+.item-del{background:none;border:none;color:rgba(255,107,107,.5);font-size:1rem;cursor:pointer}
+.item-del:hover{color:#ff6b6b}
+.add-item-btn{background:none;border:1px dashed rgba(255,255,255,.18);border-radius:4px;color:rgba(255,255,255,.5);font-size:.76rem;cursor:pointer;padding:7px 10px;margin-top:8px;width:100%}
+.add-item-btn:hover{border-color:rgba(255,255,255,.35);color:#fff}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(255,209,95,.07);border:1px solid rgba(255,209,95,.15);border-radius:4px}
+.total-label{font-size:.76rem;font-weight:800;color:rgba(255,255,255,.56)}
+.total-value{font-size:.96rem;font-weight:900;color:#ffd15f}
+
+/* History toggle */
+.history-toggle-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  border-radius:4px;padding:9px 14px;cursor:pointer;
+  color:var(--warn2);font-size:.84rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.03em;
+}
+.history-toggle-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
+.history-toggle-hint{font-size:.72rem;font-weight:500;color:rgba(255,255,255,.45);text-transform:none;letter-spacing:0}
+.history-collapsible{margin-top:10px}
+.history-item{padding:12px;background:rgba(255,255,255,.04);border-radius:4px;border-left:3px solid rgba(244,179,38,.5);margin-bottom:8px;font-size:.8rem}
+.history-item .hist-date{color:#ffd15f;font-weight:700;margin-bottom:4px}
+.history-item .hist-text{color:rgba(255,255,255,.8);line-height:1.4}
+
+/* Toast */
+.sg-toast{
+  position:fixed;
+  bottom:22px;
+  right:22px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#0a1832;
+  border:1px solid var(--line);
+  border-left:3px solid var(--warn2);
+  border-radius:4px;
+  padding:10px 16px 10px 12px;
+  color:rgba(255,255,255,.92);
+  font-size:.78rem;
+  font-weight:600;
+  z-index:9999;
+  min-width:200px;
+  max-width:320px;
+  transform:translateX(calc(100% + 32px));
+  opacity:0;
+  transition:transform .22s ease,opacity .18s ease;
+  pointer-events:none;
+}
+.sg-toast.show{transform:translateX(0);opacity:1}
+.sg-toast.success{border-left-color:#4ade80}
+.sg-toast.danger{border-left-color:#f87171}
+.sg-toast.warning{border-left-color:var(--warn2)}
+.sg-toast-icon{
+  flex:0 0 22px;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  background:rgba(255,255,255,.07);
+}
+@keyframes checkDraw{from{stroke-dashoffset:20;opacity:0}to{stroke-dashoffset:0;opacity:1}}
+@keyframes crossDraw{from{stroke-dashoffset:14;opacity:0}to{stroke-dashoffset:0;opacity:1}}
+.toast-check-svg path{stroke-dasharray:20;stroke-dashoffset:20;animation:checkDraw .35s .1s cubic-bezier(.4,0,.2,1) forwards}
+.toast-cross-svg path{stroke-dasharray:14;stroke-dashoffset:14;animation:crossDraw .28s .08s ease forwards}
+.sg-toast-msg{flex:1;line-height:1.4}
+
+/* Highlight row */
+.hl-alert-row,
+.table-sg tbody tr.hl-alert-row,
+.table-sg tbody tr:nth-child(odd).hl-alert-row,
+.table-sg tbody tr:nth-child(even).hl-alert-row{
+  background:rgba(217,45,32,.32);
+  outline:2px solid #d92d20;
+  outline-offset:-2px;
+}
+@media (prefers-reduced-motion:no-preference){
+  .hl-alert-row,
+  .table-sg tbody tr.hl-alert-row,
+  .table-sg tbody tr:nth-child(odd).hl-alert-row,
+  .table-sg tbody tr:nth-child(even).hl-alert-row{
+    animation:hlPulseLite 1s ease 2;
+  }
+  @keyframes hlPulseLite{
+    50%{background:rgba(217,45,32,.44)}
+  }
+}
+
+@media (max-width:991px){
+  .search-row{flex-wrap:wrap}
+  .search-field-main,.search-field-status,.search-field-pt{flex:1 1 100%}
+}
+
+@media (max-width:768px){
+  .wrap{padding:12px 12px 18px}
+  .page-head,.grid-head,.table-meta{flex-direction:column;align-items:flex-start}
+  .title{font-size:1.46rem}
+  .sub{font-size:.78rem}
+  .grid-toolbar{width:100%;justify-content:flex-start}
+  .grid-head-left{min-height:auto}
+  .modal-dark .modal-dialog{width:calc(100% - 18px)}
+  .detail-dropdown-list{right:auto;left:0;width:min(280px,calc(100vw - 48px))}
+  .items-head,.item-row{grid-template-columns:1fr}
+}
+
+
+
+
+/* ===== PROGRESSIVE ROW RENDER ===== */
+#mainTable tbody{ opacity:0; transition:opacity .18s ease; }
+#mainTable tbody.sg-ready{ opacity:1; }
+#mainTable tbody tr{ content-visibility:auto; contain-intrinsic-size:0 42px; }
+
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <h1 class="title">Data Servis</h1>
+    <a class="btn-home" href="{{ url_for('main.home') }}">← Home</a>
+  </div>
+
+  <div class="panel panel-pad mb-3">
+    <form method="get" action="{{ url_for('main.go_data_servis') }}" autocomplete="off">
+      <div class="search-row">
+        <div class="search-field-main">
+          <input class="form-control" name="q" value="{{ q or '' }}" placeholder="Cari kendaraan, plat, merk, tipe, nama aset, vendor...">
+        </div>
+
+        <div class="search-field-status">
+          <div class="custom-select-wrap" id="statusSelectWrap">
+            <input type="hidden" name="status" id="statusHidden" value="{{ status or '' }}">
+            <button type="button" class="custom-select-btn" id="statusBtn">
+              <span id="statusLabel">{% if status == 'overdue' %}Terlambat{% elif status == 'soon' %}Jatuh tempo dekat{% elif status == 'safe' %}Aman{% elif status == 'empty' %}Belum Diisi{% elif status == 'paid' %}Sudah dibayar{% elif status == 'borrowed' %}Dipinjam{% elif status == 'done' %}Selesai{% else %}Semua Status{% endif %}</span>
+              <i class="bi bi-chevron-down" style="font-size:.65rem;opacity:.6"></i>
+            </button>
+            <div class="custom-select-drop" id="statusDrop">
+              <div class="custom-select-list" id="statusList">
+                <div class="cso" data-val="">Semua Status</div>
+                <div class="cso" data-val="overdue">Terlambat</div>
+                <div class="cso" data-val="soon">Jatuh tempo dekat</div>
+                <div class="cso" data-val="safe">Aman</div>
+                <div class="cso" data-val="empty">Belum Diisi</div>
+                <div class="cso" data-val="paid">Sudah dibayar</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-field-pt">
+          <div class="custom-select-wrap" id="ptSelectWrap">
+            <input type="hidden" name="company" id="ptHidden" value="{{ company or '' }}">
+            <button type="button" class="custom-select-btn" id="ptBtn">
+              <span id="ptLabel">{{ company if company else 'Semua PT' }}</span>
+              <i class="bi bi-chevron-down" style="font-size:.65rem;opacity:.6"></i>
+            </button>
+            <div class="custom-select-drop" id="ptDrop">
+              <input type="text" class="custom-select-search" id="ptSearch" placeholder="Cari PT...">
+              <div class="custom-select-list" id="ptList">
+                <div class="cso" data-val="">Semua PT</div>
+                {% for c in companies or [] %}
+                <div class="cso" data-val="{{ c }}">{{ c }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-warning">Cari</button>
+        <a href="{{ url_for('main.go_data_servis') }}" class="btn-reset-search">Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel panel-pad panel-flex">
+    <div class="grid-shell" id="serviceGridShell" data-delete-base="{{ url_for('main.data_servis_delete', service_id=0)[:-1] }}">
+      <div class="grid-head">
+        <div class="grid-head-left">
+          <h2 class="sec">Daftar Servis</h2>
+          <p class="note">Total data: {{ service_rows|length }} kendaraan</p>
+        </div>
+
+            <div class="grid-toolbar">
+          <div class="toolbar-actions">
+            <button type="button" class="mini-tool" data-action="reset-select" title="Reset pilihan" aria-label="Reset pilihan">
+              <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 3v6h6"></path></svg>
+            </button>
+
+            <button type="button" class="mini-tool" data-role="edit-btn" title="Edit Tanggal/Catatan" aria-label="Edit Tanggal/Catatan">
+              <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg>
+            </button>
+
+            <div class="detail-dropdown-wrap">
+              <button type="button" class="detail-dropdown-btn" id="detailDropdownBtn">
+                Detail
+                <svg style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+              <div class="detail-dropdown-list" id="detailDropdownList">
+                <input type="text" class="detail-dropdown-search" id="detailSearch" placeholder="Cari kendaraan...">
+                <div class="detail-dropdown-items" id="detailItems">
+                  {% for r in service_rows %}
+                  {% set v = r.vehicle %}
+                  {% set nama_utama = (r.nama_utama or v.active_name or v.new_asset_name or v.name_as_asset_pt or r.kendaraan or '-') %}
+                  <a class="detail-item-option" data-target="#detailService{{ r.vehicle_id }}" href="javascript:void(0)">
+                    {{ nama_utama }} ({{ r.no_polisi or '-' }})
+                  </a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        {% if service_rows %}
+        <table class="table-sg js-grid-table">
+          <colgroup>
+            <col class="no"><col class="c-pt"><col class="c-kendaraan"><col class="c-exp"><col class="c-exp"><col class="c-status"><col class="c-vendor"><col class="c-odo"><col class="c-aksi"><col class="c-note"><col class="c-export">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>PT</th>
+              <th>Kendaraan</th>
+              <th>Jatuh Tempo Servis</th>
+              <th>Next Setelah Proses</th>
+              <th>Status</th>
+              <th>Vendor</th>
+              <th>ODO (KM)</th>
+              <th>Aksi</th>
+              <th>Catatan</th>
+              <th>Export</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in service_rows %}
+            {% set v = r.vehicle %}
+            {% set nama_utama = (r.nama_utama or v.active_name or v.new_asset_name or v.name_as_asset_pt or r.kendaraan or '-') %}
+            {% set note_clean = r.note_display or '' %}
+            <tr class="js-select-row{% if highlight_id and highlight_id == r.vehicle_id %} hl-alert-row{% endif %}"
+                data-vehicle-id="{{ r.vehicle_id }}"
+                data-service-id="{{ r.service_id or '' }}"
+                data-can-process="{{ '1' if r.can_process else '0' }}"
+                data-target="{{ '#modalTambah' ~ r.vehicle_id }}"
+                data-service-date="{{ r.tgl_servis.strftime('%Y-%m-%d') if r.tgl_servis else '' }}"
+                data-note="{{ note_clean|e }}"
+                data-vehicle-name="{{ nama_utama }}">
+              <td class="cell-no">{{ r.no }}</td>
+              <td>{% if r.pt %}<a class="pt-detail-link" href="{{ url_for('main.perusahaan_ringkasan', company=r.pt, next=request.full_path) }}">{{ r.pt }}</a>{% else %}-{% endif %}</td>
+              <td>
+                <div class="vehicle-main"><a class="vehicle-detail-link" href="{{ url_for('main.vehicle_detail_page', vehicle_id=r.vehicle_id, next=request.full_path) }}">{{ nama_utama }}</a></div>
+                <div class="vehicle-sub">{{ r.no_polisi or '-' }}</div>
+              </td>
+              <td>{{ fmt_tgl(r.tgl_servis) if r.tgl_servis else '-' }}</td>
+              <td>{{ fmt_tgl(r.next_servis) if r.next_servis else '-' }}</td>
+              <td>
+                {% if r.status_servis == 'overdue' %}
+                  <span class="badge-status badge-danger">Terlambat</span>
+                {% elif r.status_servis == 'soon' %}
+                  <span class="badge-status badge-soon">H-30</span>
+                {% elif r.status_servis == 'safe' %}
+                  <span class="badge-status badge-safe">Aman</span>
+                {% else %}
+                  <span class="badge-status badge-empty">Belum ada jatuh tempo</span>
+                {% endif %}
+              </td>
+              <td>{{ r.vendor or '-' }}</td>
+              <td style="text-align:right">{{ r.odo_km or '-' }}</td>
+              <td class="cell-no">
+                <div class="action-stack">
+                  <button type="button" class="btn-pay btn-open-service-modal" data-can-process="{{ '1' if r.can_process else '0' }}" data-target="{{ '#modalTambah' ~ r.vehicle_id }}">Proses</button>
+                </div>
+              </td>
+              <td><div class="table-note">{{ r.note_display or '' }}</div></td>
+              <td class="cell-no">
+                <button type="button" class="btn-export-icon js-open-export-modal" data-target="#exportService{{ r.vehicle_id }}" title="Export Excel" aria-label="Export Excel">
+                  <svg viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-box">Belum ada data servis.</div>
+        {% endif %}
+      </div>
+
+      <div class="table-meta">
+        <div class="table-count" data-role="table-count">Menampilkan 0 dari 0 data</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Jatuh Tempo & Catatan -->
+<div class="modal modal-dark" id="modalEditTglNoteServis" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Edit Jatuh Tempo & Catatan</h5>
+          <div class="note" style="margin:0">Ubah jatuh tempo servis dan catatan untuk kendaraan yang dipilih</div>
+        </div>
+        <button type="button" class="btn-close btn-close-edit-modal-servis" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-2">
+          <div class="col-12">
+            <label class="form-label">Kendaraan</label>
+            <div class="info-card" id="editServiceVehicleName">-</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Jatuh Tempo Servis</label>
+            <input type="date" class="form-control" id="editTglServis">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Catatan</label>
+            <input type="text" class="form-control" id="editServiceNote" placeholder="Masukkan catatan...">
+          </div>
+          <div class="col-12">
+            <div class="modal-footer-actions">
+              <button type="button" class="btn-modal-close btn-close-edit-modal-servis">Batal</button>
+              <button type="button" class="btn-modal-submit btn-secondary" id="btnClearEditServis">Kosongkan Teks</button>
+              <button type="button" class="btn-modal-submit" id="btnSaveEditServis">Simpan Perubahan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% for r in service_rows %}
+{% set nama_utama = (r.nama_utama or r.vehicle.active_name or r.vehicle.new_asset_name or r.vehicle.name_as_asset_pt or r.kendaraan or '-') %}
+<div class="modal modal-dark service-modal" id="{{ 'modalTambah' ~ r.vehicle_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Proses Servis</h5>
+          <div class="note" style="margin:0">Input data servis. Jika memilih kategori "Servis Berat", tanggal servis rutin berikutnya tidak akan berubah.</div>
+        </div>
+        <button type="button" class="btn-close btn-close-service" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{{ url_for('main.data_servis_tambah') }}" class="service-process-form">
+          <input type="hidden" name="vehicle_id" value="{{ r.vehicle_id }}">
+          <input type="hidden" name="service_id" value="{{ r.service_id or '' }}">
+          <input type="hidden" name="items_json" class="js-items-json" value="">
+
+          <div class="row g-2">
+            <div class="col-md-7">
+              <label class="form-label">Kendaraan</label>
+              <input class="form-control" value="{{ nama_utama }}" readonly tabindex="-1">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">No Polisi</label>
+              <input class="form-control" value="{{ r.no_polisi or '-' }}" readonly tabindex="-1">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Tanggal Servis</label>
+              <input type="date" class="form-control" name="service_date" value="" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Odometer (KM)</label>
+              <input type="number" class="form-control" name="odometer_km" value="" placeholder="45000">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Kategori Servis</label>
+              <select class="form-select" name="kategori_servis">
+                <option value="rutin" {% if not r.jenis_servis or 'berat' not in (r.jenis_servis|lower) %}selected{% endif %}>Servis Rutin (Merubah Jadwal Next Setelah Proses)</option>
+                <option value="berat" {% if r.jenis_servis and 'berat' in (r.jenis_servis|lower) %}selected{% endif %}>Servis Berat (TIDAK Merubah Jadwal Rutin)</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Pembayaran</label>
+              <select class="form-select" name="jenis_pembayaran">
+                <option value="reguler" {% if not r.note or 'asuransi' not in (r.note|lower) %}selected{% endif %}>Reguler</option>
+                <option value="asuransi" {% if r.note and 'asuransi' in (r.note|lower) %}selected{% endif %}>Asuransi</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <div class="alert-inline"><b>INFO:</b> Khusus Kategori <b>Servis Berat</b> tidak akan merubah jadwal servis rutin. Tanggal servis rutin berikutnya tetap dihitung otomatis 6 bulan dari servis rutin terakhir.</div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Rincian Item</label>
+              <div class="items-wrap">
+                <div class="items-head">
+                  <span>Item</span>
+                  <span>Bengkel</span>
+                  <span>Biaya</span>
+                  <span></span>
+                </div>
+                <div class="js-items-body">
+                  {% set items = r.items_list if r.items_list else [] %}
+                  <div class="item-row">
+                      <input type="text" class="form-control js-item-nama" placeholder="Nama item">
+                      <input type="text" class="form-control js-item-vendor" placeholder="Bengkel">
+                      <input type="number" class="form-control js-item-biaya" placeholder="0" min="0" step="1">
+                      <button type="button" class="item-del js-del-item">×</button>
+                    </div>
+                </div>
+              </div>
+              <button type="button" class="add-item-btn js-add-item">+ Tambah Item</button>
+            </div>
+
+            <div class="col-12">
+              <div class="total-row">
+                <span class="total-label">Total Biaya</span>
+                <span class="total-value js-total">Rp 0</span>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Catatan</label>
+              <textarea class="form-control" name="note" rows="3" placeholder="Detail tambahan..."></textarea>
+            </div>
+
+            <div class="col-12">
+              <div class="modal-footer-actions">
+                <button type="button" class="btn-modal-close btn-close-service">Tutup</button>
+                <button type="submit" class="btn-modal-submit">Simpan</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-dark detail-modal" id="detailService{{ r.vehicle_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Detail Servis</h5>
+          <div class="note" style="margin:0">Ringkasan kendaraan dan history servis</div>
+        </div>
+        <button type="button" class="btn-close btn-close-detail" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <h6>Informasi Kendaraan</h6>
+          <div class="detail-item"><span class="detail-label">Nama Aset</span><span class="detail-value">{{ nama_utama }}</span></div>
+          <div class="detail-item"><span class="detail-label">No Polisi</span><span class="detail-value">{{ r.no_polisi or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">PT</span><span class="detail-value">{% if r.pt %}<a class="pt-detail-link" href="{{ url_for('main.perusahaan_ringkasan', company=r.pt, next=request.full_path) }}">{{ r.pt }}</a>{% else %}-{% endif %}</span></div>
+          <div class="detail-item"><span class="detail-label">Merk</span><span class="detail-value">{{ r.vehicle.merk or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Tipe</span><span class="detail-value">{{ r.vehicle.type or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Jenis</span><span class="detail-value">{{ r.vehicle.jenis or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Tahun Pemakaian</span><span class="detail-value">{{ r.vehicle.year_of_use or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Jatuh Tempo Servis</span><span class="detail-value">{{ fmt_tgl(r.tgl_servis) if r.tgl_servis else '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Next Setelah Proses</span><span class="detail-value">{{ fmt_tgl(r.next_servis) if r.next_servis else '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Vendor</span><span class="detail-value">{{ r.vendor or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">ODO</span><span class="detail-value">{{ r.odo_km or '-' }} KM</span></div>
+          <div class="detail-item"><span class="detail-label">Status</span><span class="detail-value">{% if r.status_servis == 'overdue' %}Terlambat{% elif r.status_servis == 'soon' %}Jatuh tempo dekat{% elif r.status_servis == 'safe' %}Aman{% else %}Belum ada data{% endif %}</span></div>
+          <div class="detail-item"><span class="detail-label">Kategori Servis</span><span class="detail-value">{{ r.jenis_servis or '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Pembayaran</span><span class="detail-value">{% if r.note and 'asuransi' in (r.note|lower) %}Asuransi{% else %}Reguler{% endif %}</span></div>
+          <div class="detail-item">
+            <span class="detail-label">Rincian Servis</span>
+            <div class="detail-rich-value">
+              {% set detail_items = r.items_list or [] %}
+              {% if detail_items %}
+              <div class="detail-bullets">
+                {% for item in detail_items %}
+                <div class="detail-bullet">
+                  <span class="detail-bullet-name">{{ item.nama or '-' }}</span>
+                  <span class="detail-bullet-cost">{{ rupiah(item.biaya or 0) }}</span>
+                </div>
+                {% if item.vendor %}<div style="font-size:11px;color:rgba(255,255,255,.45)">{{ item.vendor }}</div>{% endif %}
+                {% endfor %}
+              </div>
+              <div class="detail-total-box">Total: {{ rupiah(detail_items | sum(attribute='biaya') if detail_items else (r.total_biaya or 0)) }}</div>
+              {% else %}
+              <span class="detail-value">{{ r.items_summary or '-' }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="detail-item"><span class="detail-label">Catatan</span><span class="detail-value">{{ r.note_display or '-' }}</span></div>
+        </div>
+
+        <div class="detail-section">
+          <h6>Filter Export Excel</h6>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label">Dari Tanggal</label>
+              <input type="date" class="form-control js-export-date-from">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Sampai Tanggal</label>
+              <input type="date" class="form-control js-export-date-to">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Jenis Export</label>
+              <select class="form-select js-export-type">
+                <option value="all" selected>Semua Sheet</option>
+                <option value="summary">Ringkasan Saja</option>
+                <option value="history">Riwayat Saja</option>
+                <option value="items">Rincian Item Saja</option>
+              </select>
+            </div>
+          </div>
+          <div class="alert-inline" style="margin-top:10px">
+            Kosongkan tanggal kalau mau ambil semua data. Kalau perlu audit 5 tahun terakhir, tinggal isi range tanggalnya.
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <button type="button" class="history-toggle-btn" onclick="toggleHistory(this)">
+            <span class="history-toggle-label">▶ Riwayat Servis</span>
+            <span class="history-toggle-hint">klik untuk lihat</span>
+          </button>
+          <div class="history-collapsible" style="display:none">
+            <div data-history-list="{{ r.vehicle_id }}">
+              <p style="color:rgba(255,255,255,.6);font-size:.8rem">Memuat riwayat...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="modal-footer-actions">
+            <button
+              type="button"
+              class="btn-modal-submit btn-secondary js-export-service-excel"
+              data-vehicle-id="{{ r.vehicle_id }}"
+              data-vehicle-name="{{ nama_utama }}"
+            >
+              Ekspor Excel
+            </button>
+            <button type="button" class="btn-modal-close btn-close-detail">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-dark export-modal" id="exportService{{ r.vehicle_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-1">Export Excel Servis</h5>
+          <div class="note" style="margin:0">{{ nama_utama }}{% if r.no_polisi %} - {{ r.no_polisi }}{% endif %}</div>
+        </div>
+        <button type="button" class="btn-close btn-close-export" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <h6>Filter Export Excel</h6>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label">Dari Tanggal</label>
+              <input type="date" class="form-control js-export-date-from" value="">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Sampai Tanggal</label>
+              <input type="date" class="form-control js-export-date-to" value="">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Jenis Export</label>
+              <select class="form-select js-export-type">
+                <option value="all" selected>Semua Sheet</option>
+                <option value="summary">Ringkasan Saja</option>
+                <option value="history">Riwayat Saja</option>
+                <option value="items">Rincian Item Saja</option>
+              </select>
+            </div>
+          </div>
+          <div class="alert-inline" style="margin-top:10px">Kosongkan tanggal kalau mau ambil semua data. Isi range tanggal kalau diminta rekapan periode tertentu.</div>
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-modal-submit btn-secondary js-export-service-excel" data-vehicle-id="{{ r.vehicle_id }}" data-vehicle-name="{{ nama_utama }}">Ekspor Excel</button>
+          <button type="button" class="btn-modal-close btn-close-export">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<script>
+(()=>{
+  const shell=document.getElementById('serviceGridShell');
+  if(!shell)return;
+
+  const table=shell.querySelector('.js-grid-table');
+  const tbody=table&&table.tBodies[0];
+  const rows=tbody?[...tbody.querySelectorAll('.js-select-row')]:[];
+  const tableCount=shell.querySelector('[data-role="table-count"]');
+  const editBtn=shell.querySelector('[data-role="edit-btn"]');
+
+  let state={primary:null,serviceId:null,target:null,vehicleName:''};
+
+  const setPrimaryFromRow=(row)=>{
+    state.primary=row?.dataset.vehicleId||null;
+    state.serviceId=row?.dataset.serviceId||null;
+    state.target=row?.dataset.target||null;
+    state.vehicleName=row?.dataset.vehicleName||'';
+  };
+
+  const syncRow=(row)=>{
+    const on=(row.dataset.vehicleId||'')===state.primary;
+    row.classList.toggle('is-selected',on);
+  };
+
+  const syncToolbar=()=>{
+    const hasSelection=!!state.primary;
+    if(editBtn){
+      editBtn.disabled=!hasSelection;
+      editBtn.setAttribute('aria-disabled',hasSelection?'false':'true');
+      editBtn.classList.toggle('is-disabled',!hasSelection);
+    }
+  };
+
+  const syncAll=()=>{ rows.forEach(syncRow); syncToolbar(); };
+
+  const clearSelection=()=>{
+    state.primary=null;
+    state.serviceId=null;
+    state.target=null;
+    state.vehicleName='';
+    syncAll();
+    // Hapus highlight merah (alert)
+    document.querySelectorAll('.hl-alert-row').forEach(el => el.classList.remove('hl-alert-row'));
+    // Bersihkan parameter highlight dari URL agar tidak muncul lagi saat refresh manual
+    const url = new URL(window.location);
+    if (url.searchParams.has('highlight')) {
+      url.searchParams.delete('highlight');
+      window.history.replaceState({}, '', url);
+    }
+  };
+
+  const selectRow=(row)=>{
+    if(!row)return;
+    setPrimaryFromRow(row);
+    syncAll();
+  };
+
+  const openModal=(selector)=>{
+    const modal=document.querySelector(selector);
+    if(!modal)return;
+    modal.classList.add('show');
+    modal.style.display='block';
+    document.body.classList.add('modal-open');
+    document.body.style.overflow='hidden';
+    if(modal.classList.contains('service-modal')) recalcTotals(modal);
+  };
+
+  const closeModal=(modal)=>{
+    if(!modal)return;
+    modal.classList.remove('show');
+    modal.style.display='none';
+    if(
+      !document.querySelector('.service-modal.show') &&
+      !document.querySelector('.detail-modal.show') &&
+      !document.querySelector('.export-modal.show') &&
+      !document.querySelector('#modalEditTglNoteServis.show')
+    ){
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow='';
+    }
+  };
+
+  rows.forEach(row=>{
+    row.style.cursor='pointer';
+    row.addEventListener('click',e=>{
+      if(e.target.closest('button,a,form,input,select,textarea,label'))return;
+      selectRow(row);
+    });
+  });
+
+  if(tableCount)tableCount.textContent=`Menampilkan ${rows.length} dari ${rows.length} data`;
+
+  shell.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(btn.dataset.action==='reset-select') clearSelection();
+  }));
+
+  editBtn?.addEventListener('click',()=>{
+    if(!state.primary)return;
+    const row=document.querySelector(`.js-select-row[data-vehicle-id="${state.primary}"]`);
+    if(!row)return;
+    document.getElementById('editServiceVehicleName').textContent=state.vehicleName;
+    document.getElementById('editTglServis').value=row.dataset.serviceDate||'';
+    document.getElementById('editServiceNote').value=row.dataset.note||'';
+    openModal('#modalEditTglNoteServis');
+  });
+
+  const resetServiceProcessModal=(modal)=>{
+    if(!modal) return;
+    const form=modal.querySelector('.service-process-form');
+    if(!form) return;
+    const dateInput=form.querySelector('[name="service_date"]');
+    const odoInput=form.querySelector('[name="odometer_km"]');
+    const noteInput=form.querySelector('[name="note"]');
+    const kategoriInput=form.querySelector('[name="kategori_servis"]');
+    const pembayaranInput=form.querySelector('[name="jenis_pembayaran"]');
+    const itemsBody=modal.querySelector('.js-items-body');
+
+    if(dateInput) dateInput.value='';
+    if(odoInput) odoInput.value='';
+    if(noteInput) noteInput.value='';
+    if(kategoriInput) kategoriInput.value='rutin';
+    if(pembayaranInput) pembayaranInput.value='reguler';
+
+    if(itemsBody){
+      itemsBody.innerHTML='';
+      itemsBody.appendChild(makeItemRow());
+    }
+
+    recalcTotals(modal);
+  };
+
+  document.querySelectorAll('.btn-open-service-modal').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const row=btn.closest('.js-select-row');
+    if(row)selectRow(row);
+    const canProcess=(btn.dataset.canProcess || row?.dataset.canProcess || '') === '1';
+    if(!canProcess){
+      showToast('Tidak bisa proses servis sebelum isi jatuh tempo servis lewat tombol Edit.', 'warning');
+      return;
+    }
+    const modal=document.querySelector(btn.dataset.target);
+    resetServiceProcessModal(modal);
+    openModal(btn.dataset.target);
+  }));
+
+  document.querySelectorAll('.js-open-export-modal').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const row=btn.closest('.js-select-row');
+    if(row) selectRow(row);
+    openModal(btn.dataset.target);
+  }));
+
+  document.querySelectorAll('.btn-close-service').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.closest('.service-modal'))));
+  document.querySelectorAll('.btn-close-detail').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.closest('.detail-modal'))));
+  document.querySelectorAll('.btn-close-export').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.closest('.export-modal'))));
+  document.querySelectorAll('.btn-close-edit-modal-servis').forEach(btn=>btn.addEventListener('click',()=>closeModal(document.getElementById('modalEditTglNoteServis'))));
+
+  // service-modal dan modalEditTglNoteServis tidak bisa ditutup klik di luar — hanya tombol Tutup/X
+  document.querySelectorAll('.detail-modal,.export-modal').forEach(modal=>modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(modal); }));
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){
+      document.querySelectorAll('.service-modal.show').forEach(closeModal);
+      document.querySelectorAll('.detail-modal.show').forEach(closeModal);
+      document.querySelectorAll('.export-modal.show').forEach(closeModal);
+      closeModal(document.getElementById('modalEditTglNoteServis'));
+    }
+  });
+
+  document.getElementById('btnSaveEditServis')?.addEventListener('click',()=>{
+    if(!state.primary)return;
+    const tglServis=document.getElementById('editTglServis').value;
+    const note=document.getElementById('editServiceNote').value;
+    fetch('/api/servis/update-tgl-note',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({vehicle_id:state.primary,tgl_servis:tglServis,note:note})
+    }).then(r=>r.json()).then(data=>{
+      if(data.success){ showToast('Perubahan berhasil disimpan.','success'); setTimeout(()=>location.reload(),900); }
+      else showToast('Gagal menyimpan: '+(data.error||'Unknown error'),'danger');
+    }).catch(e=>showToast('Error: '+e.message,'danger'));
+  });
+
+  document.getElementById('btnClearEditServis')?.addEventListener('click',()=>{
+    if(!window.confirm('Kosongkan tanggal dan catatan?'))return;
+    if(!state.primary)return;
+    fetch('/api/servis/update-tgl-note',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({vehicle_id:state.primary,tgl_servis:'',note:''})
+    }).then(r=>r.json()).then(data=>{
+      if(data.success){ showToast('Data berhasil dikosongkan.','success'); setTimeout(()=>location.reload(),900); }
+      else showToast('Gagal mengosongkan: '+(data.error||'Unknown error'),'danger');
+    }).catch(e=>showToast('Error: '+e.message,'danger'));
+  });
+
+  // Auto-select removed per user request
+  syncAll();
+
+  /* ===== PROGRESSIVE ROW RENDER ===== */
+  (function(){
+    const tbody = document.querySelector('#mainTable tbody');
+    if(!tbody) return;
+    const reveal = ()=>{ tbody.classList.add('sg-ready'); };
+    typeof requestIdleCallback!=='undefined'
+      ? requestIdleCallback(reveal,{timeout:400})
+      : setTimeout(reveal,50);
+  })();
+
+})();
+
+function fmtRp(n){
+  const val=Math.round(Number(n||0));
+  return 'Rp '+val.toLocaleString('id-ID');
+}
+
+function makeItemRow(){
+  const row=document.createElement('div');
+  row.className='item-row';
+  row.innerHTML=`
+    <input type="text" class="form-control js-item-nama" placeholder="Nama item">
+    <input type="text" class="form-control js-item-vendor" placeholder="Bengkel">
+    <input type="number" class="form-control js-item-biaya" placeholder="0" min="0" step="1">
+    <button type="button" class="item-del js-del-item">×</button>
+  `;
+  return row;
+}
+
+function recalcTotals(modal){
+  const nums=[...modal.querySelectorAll('.js-item-biaya')];
+  const total=nums.reduce((sum,input)=>sum+(parseFloat(input.value)||0),0);
+  const target=modal.querySelector('.js-total');
+  if(target)target.textContent=fmtRp(total);
+}
+
+document.querySelectorAll('.service-process-form').forEach(form=>{
+  const modal=form.closest('.service-modal');
+  if(!modal)return;
+
+  modal.addEventListener('input',e=>{
+    if(e.target.classList.contains('js-item-biaya')) recalcTotals(modal);
+  });
+
+  modal.querySelectorAll('.js-add-item').forEach(btn=>btn.addEventListener('click',()=>{
+    modal.querySelector('.js-items-body')?.appendChild(makeItemRow());
+    recalcTotals(modal);
+  }));
+
+  modal.addEventListener('click',e=>{
+    if(!e.target.classList.contains('js-del-item')) return;
+    const row=e.target.closest('.item-row');
+    const body=row?.parentElement;
+    if(!row||!body)return;
+    if(body.querySelectorAll('.item-row').length<=1)return;
+    row.remove();
+    recalcTotals(modal);
+  });
+
+  form.addEventListener('submit',()=>{
+    const itemRows=[...modal.querySelectorAll('.item-row')];
+    const items=itemRows.map(r=>({
+      nama:r.querySelector('.js-item-nama')?.value||'',
+      vendor:r.querySelector('.js-item-vendor')?.value||'',
+      biaya:parseFloat(r.querySelector('.js-item-biaya')?.value)||0
+    })).filter(i=>i.nama||i.vendor||i.biaya>0);
+
+    const hidden=form.querySelector('.js-items-json');
+    if(hidden)hidden.value=JSON.stringify(items);
+
+    let costField=form.querySelector('[name="cost"]');
+    if(!costField){
+      costField=document.createElement('input');
+      costField.type='hidden';
+      costField.name='cost';
+      form.appendChild(costField);
+    }
+    costField.value=items.reduce((s,i)=>s+i.biaya,0);
+    showToast('Menyimpan data servis...','success');
+  });
+
+  recalcTotals(modal);
+});
+
+// Handle Flash Messages as Toasts
+document.addEventListener('DOMContentLoaded', () => {
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        showToast("{{ message }}", "{{ 'danger' if category in ['danger', 'error'] else 'success' }}");
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+});
+
+function loadServiceHistory(vehicleId){
+  if(!vehicleId) return;
+  const historyContainer=document.querySelector(`[data-history-list="${vehicleId}"]`);
+  if(!historyContainer || historyContainer.dataset.loaded==='1' || historyContainer.dataset.loading==='1') return;
+
+  historyContainer.dataset.loading='1';
+  fetch(`/api/servis/history/${vehicleId}`)
+    .then(r=>r.json())
+    .then(data=>{
+      const items=Array.isArray(data.history)?data.history:[];
+      if(items.length>0){
+        historyContainer.innerHTML=items.map(h=>`
+          <div class="history-item">
+            <div class="hist-date">${h.date||'-'}</div>
+            <div class="hist-text">${h.text||'-'}</div>
+          </div>
+        `).join('');
+      }else{
+        historyContainer.innerHTML='<p style="color:rgba(255,255,255,.6);font-size:.8rem">Belum ada history</p>';
+      }
+      historyContainer.dataset.loaded='1';
+    })
+    .catch(()=>{
+      historyContainer.innerHTML='<p style="color:rgba(255,255,255,.6);font-size:.8rem">Gagal memuat history</p>';
+    })
+    .finally(()=>{
+      historyContainer.dataset.loading='0';
+    });
+}
+
+document.querySelectorAll('.detail-modal').forEach(modal=>{
+  const fromInput=modal.querySelector('.js-export-date-from');
+  const toInput=modal.querySelector('.js-export-date-to');
+
+  if(fromInput) fromInput.value='';
+  if(toInput) toInput.value='';
+});
+
+document.querySelectorAll('.js-export-service-excel').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const modal=btn.closest('.export-modal,.detail-modal');
+    if(!modal)return;
+
+    const vehicleId=btn.dataset.vehicleId;
+    const vehicleName=btn.dataset.vehicleName||'DATA_SERVIS';
+    const dateFrom=modal.querySelector('.js-export-date-from')?.value||'';
+    const dateTo=modal.querySelector('.js-export-date-to')?.value||'';
+    const exportType=modal.querySelector('.js-export-type')?.value||'all';
+
+    if(dateFrom && dateTo && dateFrom>dateTo){
+      showToast('Tanggal awal tidak boleh lebih besar dari tanggal akhir.', 'warning');
+      return;
+    }
+
+    const originalHTML=btn.innerHTML;
+    const originalDisabled=btn.disabled;
+
+    btn.disabled=true;
+    btn.innerHTML=`
+      <span style="display:inline-flex;align-items:center;gap:8px">
+        <span class="spinner-border spinner-border-sm" style="width:14px;height:14px;border-width:2px"></span>
+        Menyiapkan Excel...
+      </span>
+    `;
+
+    try{
+      const url=new URL(`/api/servis/export/${vehicleId}`, window.location.origin);
+      if(dateFrom) url.searchParams.set('date_from', dateFrom);
+      if(dateTo) url.searchParams.set('date_to', dateTo);
+      if(exportType) url.searchParams.set('export_type', exportType);
+      url.searchParams.set('_', Date.now().toString());
+
+      const response=await fetch(url.toString(),{
+        method:'GET',
+        credentials:'same-origin',
+        cache:'no-store',
+        headers:{'X-Requested-With':'XMLHttpRequest'}
+      });
+
+      const contentType=(response.headers.get('content-type')||'').toLowerCase();
+      if(!response.ok){
+        let message=`HTTP ${response.status}`;
+        if(contentType.includes('application/json')){
+          const data=await response.json().catch(()=>null);
+          message=(data && (data.message || data.error)) || message;
+        }else{
+          const text=await response.text().catch(()=> '');
+          if(text) message=text.slice(0,180);
+        }
+        throw new Error(message);
+      }
+
+      if(contentType.includes('application/json')){
+        const data=await response.json().catch(()=>null);
+        throw new Error((data && (data.message || data.error)) || 'Server mengirim JSON, bukan file Excel.');
+      }
+
+      const blob=await response.blob();
+      if(!blob || blob.size===0){
+        throw new Error('File Excel kosong dari server.');
+      }
+
+      let filename='';
+      const disposition=response.headers.get('content-disposition')||'';
+      const utfMatch=disposition.match(/filename\*=UTF-8''([^;]+)/i);
+      const plainMatch=disposition.match(/filename="?([^";]+)"?/i);
+      if(utfMatch) filename=decodeURIComponent(utfMatch[1]);
+      else if(plainMatch) filename=plainMatch[1];
+
+      if(!filename){
+        const cleanName=String(vehicleName)
+          .replace(/[^a-zA-Z0-9]/g,'_')
+          .replace(/_+/g,'_')
+          .replace(/^_|_$/g,'');
+        filename=`SERVIS_${cleanName||'DATA'}_${new Date().toISOString().slice(0,10)}.xlsx`;
+      }
+
+      const blobUrl=window.URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=blobUrl;
+      a.download=filename;
+      a.style.display='none';
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(()=>{
+        window.URL.revokeObjectURL(blobUrl);
+        a.remove();
+      },1000);
+
+      showToast('Excel berhasil diunduh.','success');
+
+      setTimeout(()=>{
+        const exportModal=btn.closest('.export-modal,.detail-modal');
+        if(exportModal){
+          exportModal.classList.remove('show');
+          exportModal.style.display='none';
+          if(!document.querySelector('.service-modal.show,.export-modal.show,.detail-modal.show,#modalEditTglNoteServis.show')){
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow='';
+          }
+        }
+      },400);
+
+    }catch(err){
+      console.error('SERVIS EXPORT ERROR:', err);
+      showToast('Gagal export Excel: '+(err.message||'Silakan coba lagi.'),'danger');
+    }finally{
+      btn.disabled=originalDisabled;
+      btn.innerHTML=originalHTML;
+    }
+  });
+});
+
+(()=>{
+  const btn=document.getElementById('detailDropdownBtn');
+  const list=document.getElementById('detailDropdownList');
+  const search=document.getElementById('detailSearch');
+  const items=document.getElementById('detailItems');
+  if(!btn||!list||!search||!items)return;
+
+  const options=[...items.querySelectorAll('.detail-item-option')];
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    list.classList.toggle('open');
+    if(list.classList.contains('open')) search.focus();
+  });
+
+  document.addEventListener('click',e=>{
+    if(!btn.closest('.detail-dropdown-wrap')?.contains(e.target)) list.classList.remove('open');
+  });
+
+  search.addEventListener('input',()=>{
+    const q=search.value.toLowerCase();
+    options.forEach(opt=>{
+      opt.style.display=opt.textContent.toLowerCase().includes(q)?'':'none';
+    });
+  });
+
+  options.forEach(opt=>opt.addEventListener('click',()=>{
+    const target=opt.dataset.target;
+    if(target){
+      list.classList.remove('open');
+      const modal=document.querySelector(target);
+      if(modal){
+        modal.classList.add('show');
+        modal.style.display='block';
+        document.body.classList.add('modal-open');
+        document.body.style.overflow='hidden';
+        const historyBox=modal.querySelector('[data-history-list]');
+        if(historyBox) loadServiceHistory(historyBox.dataset.historyList);
+      }
+    }
+  }));
+})();
+
+(()=>{
+  const wrap=document.getElementById('ptSelectWrap');
+  if(!wrap)return;
+
+  const btn=document.getElementById('ptBtn');
+  const drop=document.getElementById('ptDrop');
+  const search=document.getElementById('ptSearch');
+  const list=document.getElementById('ptList');
+  const hidden=document.getElementById('ptHidden');
+  const label=document.getElementById('ptLabel');
+  const items=[...list.querySelectorAll('.cso')];
+
+  items.forEach(i=>{
+    if(i.dataset.val===hidden.value) i.classList.add('selected');
+  });
+
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    drop.classList.toggle('open');
+    if(drop.classList.contains('open'))search.focus();
+  });
+
+  document.addEventListener('click',e=>{
+    if(!wrap.contains(e.target)) drop.classList.remove('open');
+  });
+
+  search.addEventListener('input',()=>{
+    const q=search.value.toLowerCase();
+    items.forEach(i=>{
+      i.style.display=i.textContent.toLowerCase().includes(q)?'':'none';
+    });
+  });
+
+  items.forEach(i=>i.addEventListener('click',()=>{
+    hidden.value=i.dataset.val;
+    label.textContent=i.textContent;
+    items.forEach(x=>x.classList.remove('selected'));
+    i.classList.add('selected');
+    drop.classList.remove('open');
+  }));
+})();
+</script>
+
+<div class="sg-toast" id="sgToast">
+  <div class="sg-toast-icon" id="sgToastIcon"></div>
+  <span class="sg-toast-msg" id="sgToastMsg"></span>
+</div>
+
+<script>
+function showToast(msg, type='success'){
+  const t = document.getElementById('sgToast');
+  const icon = document.getElementById('sgToastIcon');
+  const msgEl = document.getElementById('sgToastMsg');
+  if(!t) return;
+
+  // Build icon SVG per type
+  let iconHtml = '';
+  if(type === 'success'){
+    iconHtml = `<svg class="toast-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`;
+  } else if(type === 'danger'){
+    iconHtml = `<svg class="toast-cross-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+  } else {
+    iconHtml = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffd15f" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>`;
+  }
+
+  if(icon) icon.innerHTML = iconHtml;
+  if(msgEl) msgEl.textContent = msg;
+
+  t.className = `sg-toast ${type}`;
+  // Force reflow to re-trigger animation
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+function toggleHistory(btn){
+  const collapsible=btn.closest('.detail-section').querySelector('.history-collapsible');
+  const label=btn.querySelector('.history-toggle-label');
+  const hint=btn.querySelector('.history-toggle-hint');
+  if(!collapsible)return;
+  const isOpen=collapsible.style.display!=='none';
+  if(isOpen){
+    collapsible.style.display='none';
+    label.textContent='▶ Riwayat Servis';
+    hint.textContent='klik untuk lihat';
+  } else {
+    collapsible.style.display='block';
+    const historyBox=collapsible.querySelector('[data-history-list]');
+    if(historyBox) loadServiceHistory(historyBox.dataset.historyList);
+    label.textContent='▼ Riwayat Servis';
+    hint.textContent='klik untuk tutup';
+  }
+}
+</script>
+
+<script>
+window.addEventListener('load',function(){
+  var el=document.querySelector('.hl-alert-row');
+  if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+});
+</script>
+
+<script>
+(function(){
+  const wrap=document.getElementById('statusSelectWrap'); if(!wrap || wrap.dataset.ready==='1') return; wrap.dataset.ready='1';
+  const btn=document.getElementById('statusBtn'), drop=document.getElementById('statusDrop'), hidden=document.getElementById('statusHidden'), label=document.getElementById('statusLabel');
+  if(!btn||!drop||!hidden||!label) return;
+  btn.addEventListener('click',function(e){e.stopPropagation();drop.classList.toggle('open')});
+  drop.querySelectorAll('.cso').forEach(function(opt){
+    if(opt.dataset.val===hidden.value) opt.classList.add('selected');
+    opt.addEventListener('click',function(){hidden.value=this.dataset.val||'';label.textContent=this.textContent.trim();drop.querySelectorAll('.cso').forEach(x=>x.classList.remove('selected'));this.classList.add('selected');drop.classList.remove('open');});
+  });
+  document.addEventListener('click',function(e){if(!wrap.contains(e.target))drop.classList.remove('open')});
+})();
+</script>
+
+{% endblock %}

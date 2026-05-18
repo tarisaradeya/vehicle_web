@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .page-wrap{ padding: 18px 0 0; }
+  .card-dark{
+    background: rgba(20, 26, 36, .82);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(0,0,0,.35);
+    backdrop-filter: blur(10px);
+  }
+  .title{
+    color: rgba(255,255,255,.92);
+    font-weight: 900;
+    letter-spacing: .04em;
+  }
+  .muted{ color: rgba(255,255,255,.62); }
+  .form-label{ color: rgba(255,255,255,.75); font-size: .86rem; }
+  .form-control, .form-select{
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.14);
+    color: rgba(255,255,255,.92);
+    border-radius: 12px;
+    padding: .7rem .9rem;
+  }
+</style>
+
+<div class="container page-wrap">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <h1 class="h4 mb-1 title">Master Admin · Kelola User</h1>
+      <div class="small muted">Buat akun internal (tanpa email). Default role registrasi: USER.</div>
+    </div>
+    <a class="btn btn-sm btn-outline-light" href="{{ url_for('main.home') }}">← Kembali</a>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-5">
+      <div class="card-dark p-3">
+        <div class="fw-bold text-white mb-2">Buat Akun Baru</div>
+        <form method="post" action="{{ url_for('main.master_users_create') }}">
+          <div class="mb-2">
+            <label class="form-label">Username</label>
+            <input class="form-control" name="username" required minlength="3">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Password</label>
+            <input class="form-control" name="password" type="password" required minlength="6">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" name="role">
+              <option value="user" selected>USER</option>
+              <option value="master">MASTER ADMIN</option>
+            </select>
+          </div>
+          <button class="btn btn-warning w-100" style="border-radius:12px; font-weight:900; letter-spacing:.06em; text-transform:uppercase;">
+            Simpan
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <div class="card-dark p-3">
+        <div class="fw-bold text-white mb-2">Daftar Akun</div>
+        <div class="table-responsive">
+          <table class="table table-sm table-dark align-middle mb-0">
+            <thead>
+              <tr class="text-white-50 small">
+                <th>Username</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td class="small">{{ u.username }}</td>
+                <td class="small">
+                  {% if u.role == 'master' %}
+                    <span class="badge text-bg-warning">MASTER ADMIN</span>
+                  {% else %}
+                    <span class="badge text-bg-secondary">USER</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+              {% if users|length == 0 %}
+                <tr><td colspan="2" class="text-white-50 small">Belum ada user.</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

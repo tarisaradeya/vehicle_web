@@ -1,0 +1,661 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root{
+  --bg1:#0b2343;
+  --bg2:#133a69;
+  --panel:#0d2748;
+  --panel2:#102f57;
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.12);
+  --soft:rgba(255,255,255,.82);
+  --muted:rgba(255,255,255,.62);
+  --cell1:#0e2c55;
+  --cell2:#0c274b;
+  --warn:#f4b326;
+  --warn2:#ffd15f;
+  --shadow:0 10px 28px rgba(0,0,0,.22);
+  --danger:#ff6b6b;
+  --safe:#8fd19e;
+  --soon:#ffd166;
+  --empty:#c7ced9;
+}
+
+html,body{
+  height:100%;
+  overflow:hidden;
+  background:linear-gradient(180deg,var(--bg1) 0%,#12345c 52%,var(--bg2) 100%)!important
+}
+
+/* Override base.html .content-wrap */
+.content-wrap{
+  min-height:unset!important;
+  height:calc(100vh - 88px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+.wrap{
+  width:100%;
+  padding:10px 18px 10px;
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.title{
+  margin:0;
+  color:#fff;
+  font-weight:900;
+  font-size:1.3rem;
+  line-height:1.08;
+  letter-spacing:.01em
+}
+
+.sub,
+.note,
+.table-count{
+  margin:.28rem 0 0;
+  color:var(--soft);
+  font-size:.82rem;
+  line-height:1.3
+}
+
+.note,
+.table-count{color:var(--muted)}
+
+.sec{
+  margin:0;
+  color:#fff;
+  font-size:1.02rem;
+  font-weight:900;
+  line-height:1.05;
+  text-transform:uppercase
+}
+
+.panel{
+  background:#12355f;
+  border:1px solid var(--line);
+  border-radius:4px;
+  box-shadow:none;
+}
+.panel-pad{padding:8px}
+
+.form-control,
+.form-select{
+  width:100%;
+  min-height:32px;
+  height:32px;
+  border-radius:4px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#fff;
+  color:#10233f;
+  font-size:.82rem;
+  padding:0 11px
+}
+
+.btn-warning{
+  height:32px;
+  border-radius:4px;
+  font-size:.8rem;
+  font-weight:900;
+  background:linear-gradient(180deg,var(--warn2),var(--warn));
+  border-color:var(--warn);
+  color:#132849
+}
+
+.panel-flex{
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.search-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.search-field-main{ flex:1 1 0; min-width:0; }
+.search-field-status{ flex:0 0 180px; }
+.search-field-pt{ flex:0 0 160px; }
+
+.custom-select-wrap{
+  position:relative;
+  width:100%;
+}
+.custom-select-btn{
+  width:100%;
+  height:32px;
+  border-radius:4px;
+  border:1px solid rgba(0,0,0,.15);
+  background:#fff;
+  color:#10233f;
+  font-size:.82rem;
+  padding:0 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.custom-select-btn span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.custom-select-drop{
+  display:none;
+  position:absolute;
+  top:calc(100% + 4px);
+  left:0;
+  width:220px;
+  background:#fff;
+  border:1px solid #1e4080;
+  border-radius:4px;
+  box-shadow:none;
+  z-index:999;
+  overflow:hidden;
+}
+.custom-select-drop.open{ display:block; }
+.custom-select-search{
+  width:100%;
+  border:none;
+  border-bottom:1px solid rgba(255,255,255,.1);
+  background:#fff;
+  color:#10233f;
+  font-size:.80rem;
+  padding:8px 12px;
+  outline:none;
+}
+.custom-select-search::placeholder{ color:rgba(255,255,255,.4); }
+.custom-select-list{
+  max-height:200px;
+  overflow-y:auto;
+  padding:4px 0;
+}
+.cso{
+  padding:7px 12px;
+  font-size:.80rem;
+  color:rgba(255,255,255,.85);
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.cso:hover{background:#1e5aa8;color:#fff}
+.cso.selected{ background:#1e5aa8; color:#fff; font-weight:700; }
+
+.grid-head,
+.table-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.btn-home,
+.btn-reset-search,
+.btn-detail{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-decoration:none;
+  cursor:pointer;
+  user-select:none;
+  border:1px solid rgba(255,255,255,.12);
+  color:#fff;
+  background:rgba(255,255,255,.04);
+  
+}
+
+.btn-home,
+.btn-reset-search{
+  height:34px;
+  padding:0 12px;
+  border-radius:4px;
+  font-size:.79rem;
+  font-weight:800
+}
+
+.btn-detail{
+  height:30px;
+  padding:0 10px;
+  border-radius:4px;
+  font-size:.74rem;
+  font-weight:800
+}
+
+.btn-home:hover,
+.btn-reset-search:hover,
+.btn-detail:hover{
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  border-color:rgba(255,255,255,.18)
+}
+
+.form-label{
+  color:rgba(255,255,255,.76);
+  font-size:.74rem;
+  margin:0 0 4px
+}
+
+.form-control::placeholder{color:#7c879a}
+
+.form-control:focus,
+.form-select:focus{
+  border-color:var(--warn);
+  box-shadow:none;
+}
+
+.btn-warning:hover{
+  background:linear-gradient(180deg,#ffe08b,#efb021);
+  border-color:#efb021;
+  color:#132849
+}
+
+.grid-shell{
+  position:relative;
+  border:1px solid var(--line2);
+  border-radius:4px;
+  padding:10px;
+  background:rgba(255,255,255,.02);
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.grid-head{
+  margin-bottom:10px;
+  align-items:flex-start
+}
+
+.grid-head-left{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-height:48px
+}
+
+.table-wrap{
+  overflow:auto;
+  transform:translateZ(0);
+  border-radius:4px;
+  border:1px solid rgba(255,255,255,.08);
+  flex:1 1 0;
+  min-height:0;
+}
+
+.table-sg{
+  width:100%;
+  margin:0;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:1280px;
+  table-layout:fixed;
+  font-family:'Poppins',Arial,Helvetica,sans-serif
+}
+
+.table-sg th,
+.table-sg td{
+  border-right:1px solid rgba(255,255,255,.08)
+}
+
+.table-sg th:last-child,
+.table-sg td:last-child{
+  border-right:0
+}
+
+.table-sg thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#1e5aa8;
+  color:#ffd15f;
+  padding:9px 10px;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+  border-bottom:2px solid rgba(255,209,95,.25);
+  text-align:left;
+  white-space:nowrap;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+}
+
+.table-sg tbody tr:nth-child(odd){background:#0e2c55}
+.table-sg tbody tr:nth-child(even){background:#0b2649}
+.table-sg tbody tr:hover{background:#1a3f6e}
+
+.table-sg tbody td{
+  color:rgba(255,255,255,.92);
+  padding:9px 10px;
+  font-size:12.5px;
+  font-weight:500;
+  line-height:1.3;
+  vertical-align:middle;
+  border-top:1px solid rgba(255,255,255,.055);
+  white-space:normal;
+  word-break:break-word;
+  overflow-wrap:anywhere
+}
+
+.table-sg tbody tr:first-child td{border-top:0}
+.cell-no{text-align:center}
+
+.vehicle-main{font-weight:800;color:#fff;line-height:1.28}
+.vehicle-sub{margin-top:4px;color:rgba(255,255,255,.68);font-size:11px;line-height:1.25}
+.empty-box{
+  padding:15px;
+  color:rgba(255,255,255,.7);
+  font-size:.82rem
+}
+
+.badge-status{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.badge-danger{background:rgba(255,107,107,.18);color:#ffd2d2;border:1px solid rgba(255,107,107,.35)}
+.badge-soon{background:rgba(255,209,102,.18);color:#ffebb3;border:1px solid rgba(255,209,102,.35)}
+.badge-safe{background:rgba(143,209,158,.16);color:#d5ffe0;border:1px solid rgba(143,209,158,.35)}
+.badge-empty{background:rgba(199,206,217,.14);color:#eef3fb;border:1px solid rgba(199,206,217,.30)}
+
+.table-sg col.no{width:54px}
+.table-sg col.c-kendaraan{width:300px}
+.table-sg col.c-exp{width:170px}
+.table-sg col.c-status{width:170px}
+.table-sg col.c-hasil{width:170px}
+.table-sg col.c-note{width:320px}
+.table-sg col.c-aksi{width:120px}
+
+@media (max-width:991px){
+  .search-row{flex-wrap:wrap}
+  .search-field-main,
+  .search-field-status,
+  .search-field-pt{flex:1 1 100%}
+}
+
+@media (max-width:768px){
+  .wrap{padding:12px 12px 18px}
+  .page-head,.grid-head,.table-meta{
+    flex-direction:column;
+    align-items:flex-start
+  }
+  .title{font-size:1.46rem}
+  .sub{font-size:.78rem}
+}
+
+.sg-toast{
+  position:fixed;bottom:22px;right:22px;
+  background:#1e5aa8;border:1px solid rgba(255,255,255,.14);
+  border-radius:4px;padding:10px 16px;
+  color:#fff;font-size:.82rem;font-weight:600;
+  box-shadow:none;
+  z-index:2000;transform:translateY(8px);opacity:0;
+  pointer-events:none;
+}
+.sg-toast.show{transform:translateY(0);opacity:1;}
+.sg-toast.success{border-color:rgba(100,220,130,.3);}
+.sg-toast.danger{border-color:rgba(220,80,80,.3);}
+
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <h1 class="title">History KIR</h1>
+    <a class="btn-home" href="{{ url_for('main.home') }}">← Home</a>
+  </div>
+
+  <div class="panel panel-pad mb-3">
+    <form method="get" action="{{ url_for('main.history_kir') }}" autocomplete="off">
+      <div class="search-row">
+        <div class="search-field-main">
+          <input class="form-control" name="q" value="{{ q or '' }}" placeholder="Cari plat, merk, tipe, nama aset...">
+        </div>
+
+        <div class="search-field-status">
+          <div class="custom-select-wrap" id="statusSelectWrap">
+            <input type="hidden" name="status" id="statusHidden" value="{{ status or '' }}">
+            <button type="button" class="custom-select-btn" id="statusBtn">
+              <span id="statusLabel">
+                {% if status == 'overdue' %}Terlambat{% elif status == 'soon' %}Jatuh tempo dekat{% elif status == 'safe' %}Aman{% elif status == 'empty' %}Belum ada KIR{% else %}Semua Status{% endif %}
+              </span>
+              <i class="bi bi-chevron-down" style="font-size:.65rem;opacity:.4;color:#10233f"></i>
+            </button>
+            <div class="custom-select-drop" id="statusDrop">
+              <input type="text" class="custom-select-search" id="statusSearch" placeholder="Cari status...">
+              <div class="custom-select-list" id="statusList">
+                <div class="cso" data-val="">Semua Status</div>
+                <div class="cso" data-val="overdue">Terlambat</div>
+                <div class="cso" data-val="soon">Jatuh tempo dekat</div>
+                <div class="cso" data-val="safe">Aman</div>
+                <div class="cso" data-val="empty">Belum ada KIR</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-field-pt">
+          <div class="custom-select-wrap" id="ptSelectWrap">
+            <input type="hidden" name="company" id="ptHidden" value="{{ company or '' }}">
+            <button type="button" class="custom-select-btn" id="ptBtn">
+              <span id="ptLabel">{{ company if company else 'Semua PT' }}</span>
+              <i class="bi bi-chevron-down" style="font-size:.65rem;opacity:.4;color:#10233f"></i>
+            </button>
+            <div class="custom-select-drop" id="ptDrop">
+              <input type="text" class="custom-select-search" id="ptSearch" placeholder="Cari PT...">
+              <div class="custom-select-list" id="ptList">
+                <div class="cso" data-val="">Semua PT</div>
+                {% for c in companies or [] %}
+                <div class="cso" data-val="{{ c }}">{{ c }}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-warning">Cari</button>
+        <a href="{{ url_for('main.history_kir') }}" class="btn-reset-search">Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel panel-pad panel-flex">
+    <div class="grid-shell">
+      <div class="grid-head">
+        <div class="grid-head-left">
+          <h2 class="sec">Riwayat KIR</h2>
+          <p class="note">Total data: {{ kir_rows|length }} record</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        {% if kir_rows %}
+        <table class="table-sg">
+          <colgroup>
+            <col class="no"><col class="c-kendaraan"><col class="c-exp"><col class="c-exp"><col class="c-exp"><col class="c-status"><col class="c-hasil"><col class="c-note">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Kendaraan</th>
+              <th>Tgl KIR</th>
+              <th>Jatuh Tempo KIR</th>
+              <th>Tgl Diinput</th>
+              <th>Status Reminder</th>
+              <th>Hasil</th>
+              <th>Catatan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in kir_rows %}
+            {% set v = r.vehicle %}
+            {% set nama_utama = (v.active_name or v.new_asset_name or v.name_as_asset_pt or vehicle_display_name(v) or '-') %}
+            {% set due = r.due_date %}
+            <tr>
+              <td class="cell-no">{{ loop.index }}</td>
+              <td>
+                <div class="vehicle-main">{{ nama_utama }}</div>
+                <div class="vehicle-sub">{{ vehicle_plate(v) }}</div>
+              </td>
+              <td>{{ fmt_tgl(r.done_date) if r.done_date else '-' }}</td>
+              <td>{{ fmt_tgl(due) if due else '-' }}</td>
+              <td>
+                {% set tgl_jam = fmt_tgl_jam(r.created_at) if r.created_at else '-' %}
+                {% if tgl_jam and tgl_jam != '-' and ' ' in tgl_jam %}
+                  {% set parts = tgl_jam.rsplit(' ', 1) %}
+                  {{ parts[0] }}<br><span style="color:rgba(255,255,255,.45);font-size:.78em">{{ parts[1] }}</span>
+                {% else %}
+                  {{ tgl_jam }}
+                {% endif %}
+              </td>
+              <td>
+                {% if due and due < today %}
+                  <span class="badge-status badge-danger">Terlambat</span>
+                {% elif due and (due - today).days <= REMINDER_DAYS %}
+                  <span class="badge-status badge-soon">Jatuh tempo dekat</span>
+                {% elif due %}
+                  <span class="badge-status badge-safe">Aman</span>
+                {% else %}
+                  <span class="badge-status badge-empty">Belum ada due date</span>
+                {% endif %}
+              </td>
+              <td>{{ r.result or '-' }}</td>
+              <td>{{ r.note or '-' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <table class="table-sg">
+          <colgroup>
+            <col class="no"><col class="c-kendaraan"><col class="c-exp"><col class="c-exp"><col class="c-exp"><col class="c-status"><col class="c-hasil"><col class="c-note">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>No</th><th>Kendaraan</th><th>Tgl KIR</th><th>Jatuh Tempo KIR</th><th>Tgl Diinput</th><th>Status Reminder</th><th>Hasil</th><th>Catatan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="8" style="text-align:left;padding:12px 10px;color:rgba(255,255,255,.45);font-size:.82rem;">Belum ada history KIR.</td></tr>
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+
+      <div class="table-meta">
+        <div class="table-count">Menampilkan {{ kir_rows|length }} record history KIR.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const allDrops = [];
+
+function setupCustomSelect(cfg){
+  const wrap=document.getElementById(cfg.wrapId);
+  if(!wrap)return;
+  const btn=document.getElementById(cfg.btnId);
+  const drop=document.getElementById(cfg.dropId);
+  const search=document.getElementById(cfg.searchId);
+  const list=document.getElementById(cfg.listId);
+  const hidden=document.getElementById(cfg.hiddenId);
+  const label=document.getElementById(cfg.labelId);
+  const items=[...list.querySelectorAll('.cso')];
+
+  allDrops.push({wrap, drop, search});
+
+  items.forEach(i=>{ if(i.dataset.val===hidden.value) i.classList.add('selected'); });
+
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const isOpen = drop.classList.contains('open');
+    // tutup semua dropdown dulu
+    allDrops.forEach(d=>{ d.drop.classList.remove('open'); });
+    // kalau tadi belum open, buka sekarang
+    if(!isOpen){
+      drop.classList.add('open');
+      search.focus();
+    }
+  });
+
+  search.addEventListener('input',()=>{
+    const q=search.value.toLowerCase();
+    items.forEach(i=>{
+      i.style.display=i.textContent.toLowerCase().includes(q)?'':'none';
+    });
+  });
+
+  items.forEach(i=>i.addEventListener('click',()=>{
+    hidden.value=i.dataset.val;
+    label.textContent=i.textContent.trim();
+    items.forEach(x=>x.classList.remove('selected'));
+    i.classList.add('selected');
+    drop.classList.remove('open');
+  }));
+}
+
+document.addEventListener('click',()=>{
+  allDrops.forEach(d=>d.drop.classList.remove('open'));
+});
+
+setupCustomSelect({
+  wrapId:'statusSelectWrap',
+  btnId:'statusBtn',
+  dropId:'statusDrop',
+  searchId:'statusSearch',
+  listId:'statusList',
+  hiddenId:'statusHidden',
+  labelId:'statusLabel'
+});
+
+setupCustomSelect({
+  wrapId:'ptSelectWrap',
+  btnId:'ptBtn',
+  dropId:'ptDrop',
+  searchId:'ptSearch',
+  listId:'ptList',
+  hiddenId:'ptHidden',
+  labelId:'ptLabel'
+});
+
+// Logika Perhitungan Otomatis Jatuh Tempo KIR (6 Bulan)
+document.querySelectorAll('.js-kir-done-date').forEach(input => {
+  input.addEventListener('change', (e) => {
+    const doneDateVal = e.target.value;
+    if (!doneDateVal) return;
+    
+    const doneDate = new Date(doneDateVal);
+    const dueDateInput = e.target.closest('.row').querySelector('.js-kir-due-date');
+    
+    if (dueDateInput) {
+      // Tambah 6 bulan tepat
+      const dueDate = new Date(doneDate);
+      dueDate.setMonth(dueDate.getMonth() + 6);
+      
+      // Format ke YYYY-MM-DD untuk input date
+      const y = dueDate.getFullYear();
+      const m = String(dueDate.getMonth() + 1).padStart(2, '0');
+      const d = String(dueDate.getDate()).padStart(2, '0');
+      dueDateInput.value = `${y}-${m}-${d}`;
+    }
+  });
+});
+</script>
+
+<div class="sg-toast" id="sgToast"></div>
+
+{% endblock %}

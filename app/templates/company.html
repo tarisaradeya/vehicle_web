@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero glass shadow-lg border-0 overflow-hidden mb-4">
+  <div class="hero-bg"></div>
+  <div class="hero-content p-4 p-lg-5">
+    <div class="row g-4 align-items-center">
+      <div class="col-12 col-lg-7">
+        <div class="text-uppercase text-white-50 small fw-semibold">Sinar Group Fleet</div>
+        <h1 class="display-6 text-white fw-bold mb-2">Solusi Manajemen Kendaraan Anda</h1>
+        <p class="text-white-75 mb-3">
+          Profil kendaraan lengkap + riwayat pembayaran, servis, user, KIR,
+          serta history pemakaian web untuk Master Admin.
+        </p>
+        <div class="d-flex gap-2 flex-wrap">
+          {% if not me %}
+            <a class="btn btn-warning" href="{{ url_for('main.login') }}">Login</a>
+          {% endif %}
+          <a class="btn btn-outline-light" href="#daftar">Lihat Daftar Kendaraan</a>
+          {% if me and me.is_master() %}
+            <a class="btn btn-outline-warning" href="{{ url_for('main.audit_page') }}">Audit Log</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-5">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="mini-card glass p-3 text-center">
+              <div class="icon-circle mb-2">🧾</div>
+              <div class="fw-semibold">Pembayaran</div>
+              <div class="small text-muted">Pajak tahunan & 5 tahunan</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="mini-card glass p-3 text-center">
+              <div class="icon-circle mb-2">🛠️</div>
+              <div class="fw-semibold">Servis</div>
+              <div class="small text-muted">Vendor, biaya, odo</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="mini-card glass p-3 text-center">
+              <div class="icon-circle mb-2">👤</div>
+              <div class="fw-semibold">User</div>
+              <div class="small text-muted">Riwayat pemakai</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="mini-card glass p-3 text-center">
+              <div class="icon-circle mb-2">✅</div>
+              <div class="fw-semibold">KIR</div>
+              <div class="small text-muted">Reminder & history</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="card glass shadow-lg border-0" id="daftar">
+  <div class="card-body">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h2 class="h4 mb-1">Daftar Kendaraan</h2>
+        <div class="text-muted small">Klik plat untuk buka profil kendaraan.</div>
+      </div>
+
+      <form class="d-flex gap-2" method="get" action="{{ url_for('main.home') }}">
+        <input class="form-control form-control-sm" name="q" value="{{ q }}" placeholder="Cari: plat/merk/type/user/nama aset">
+        <select class="form-select form-select-sm" name="company">
+          <option value="">Semua PT</option>
+          {% for c in companies %}
+            <option value="{{ c.name }}" {% if company==c.name %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-sm btn-primary">Cari</button>
+      </form>
+    </div>
+
+    <hr>
+
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr class="text-muted small">
+            <th>PLAT</th>
+            <th>MERK/TYPE</th>
+            <th>NAMA ASET</th>
+            <th>PT PEMILIK</th>
+            <th>PT PEMAKAI</th>
+            <th>USER</th>
+            <th>STATUS</th>
+            <th>LOKASI</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in vehicles %}
+          <tr>
+            <td class="fw-semibold">
+              <a href="{{ url_for('main.vehicle_detail', vehicle_id=v.id) }}" class="text-decoration-none">
+                {{ v.current_plate() or "-" }}
+              </a>
+              {% if v.plate_old and v.plate_new and v.plate_old != v.plate_new %}
+                <div class="small text-muted">Old: {{ v.plate_old }}</div>
+              {% endif %}
+            </td>
+            <td>{{ v.merk or "-" }}<div class="small text-muted">{{ v.type or "" }} · {{ v.jenis or "" }}</div></td>
+            <td>{{ v.new_asset_name or v.active_name or "-" }}</td>
+            <td>
+              {% if v.asset_owner_company %}
+                <a href="{{ url_for('main.company_profile', company_id=v.asset_owner_company.id) }}" class="text-decoration-none">
+                  {{ v.asset_owner_company.name }}
+                </a>
+              {% else %}-{% endif %}
+            </td>
+            <td>
+              {% if v.user_company %}
+                <a href="{{ url_for('main.company_profile', company_id=v.user_company.id) }}" class="text-decoration-none">
+                  {{ v.user_company.name }}
+                </a>
+              {% else %}-{% endif %}
+            </td>
+            <td>{{ v.user_new or v.user_old or "-" }}</td>
+            <td><span class="badge text-bg-secondary">{{ v.status or "-" }}</span></td>
+            <td>{{ v.lokasi or "-" }}</td>
+          </tr>
+          {% endfor %}
+          {% if vehicles|length == 0 %}
+            <tr><td colspan="8" class="text-muted small">Belum ada data. Jalankan seed_demo dulu.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="small text-muted mt-2">Menampilkan max 200 data terbaru.</div>
+  </div>
+</div>
+
+{% if me and me.is_master() %}
+<div class="card glass shadow border-0 mt-4">
+  <div class="card-body">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="fw-semibold">History Pemakaian Web (Terakhir)</div>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.audit_page') }}">Lihat semua</a>
+    </div>
+    <hr class="my-2">
+    <div class="table-responsive">
+      <table class="table table-sm">
+        <thead><tr class="text-muted small"><th>Waktu</th><th>Aktor</th><th>Aksi</th><th>Entity</th><th>Catatan</th></tr></thead>
+        <tbody>
+          {% for l in recent_audit %}
+          <tr>
+            <td class="small">{{ l.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td class="small">{{ l.actor.username if l.actor else "-" }}</td>
+            <td class="small"><span class="badge text-bg-dark">{{ l.action }}</span></td>
+            <td class="small">{{ l.entity_type or "-" }}{% if l.vehicle_id %} · Vehicle#{{ l.vehicle_id }}{% endif %}</td>
+            <td class="small">{{ l.note or "-" }}</td>
+          </tr>
+          {% endfor %}
+          {% if recent_audit|length == 0 %}
+            <tr><td colspan="5" class="text-muted small">Belum ada log.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

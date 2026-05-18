@@ -1,0 +1,60 @@
+USE fleet_sinar_group;
+
+CREATE TABLE IF NOT EXISTS vehicle_grid_tables (
+    id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(150) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS vehicle_grid_columns (
+    id INT NOT NULL AUTO_INCREMENT,
+    table_id INT NOT NULL,
+    key_name VARCHAR(120) NOT NULL,
+    label VARCHAR(150) NOT NULL,
+    data_type VARCHAR(30) NOT NULL DEFAULT 'text',
+    position_no INT NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_vehicle_grid_columns_table_key (table_id, key_name),
+    KEY idx_vehicle_grid_columns_table_id (table_id),
+    CONSTRAINT fk_vehicle_grid_columns_table
+        FOREIGN KEY (table_id) REFERENCES vehicle_grid_tables(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS vehicle_grid_cell_values (
+    id INT NOT NULL AUTO_INCREMENT,
+    table_id INT NOT NULL,
+    vehicle_id INT NOT NULL,
+    column_id INT NOT NULL,
+    value_text TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_vehicle_grid_cell_values (table_id, vehicle_id, column_id),
+    KEY idx_vehicle_grid_cell_values_table_id (table_id),
+    KEY idx_vehicle_grid_cell_values_vehicle_id (vehicle_id),
+    KEY idx_vehicle_grid_cell_values_column_id (column_id),
+    CONSTRAINT fk_vehicle_grid_cell_values_table
+        FOREIGN KEY (table_id) REFERENCES vehicle_grid_tables(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_vehicle_grid_cell_values_vehicle
+        FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_vehicle_grid_cell_values_column
+        FOREIGN KEY (column_id) REFERENCES vehicle_grid_columns(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO vehicle_grid_tables (name, is_active)
+SELECT 'Data Kendaraan', 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM vehicle_grid_tables WHERE name = 'Data Kendaraan'
+);
+
+SELECT * FROM vehicle_grid_tables;
